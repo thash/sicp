@@ -11,13 +11,13 @@
 
 (define (x-iter a b n)
   (cond ((= b 0) n)
-        ((even? b) (x-iter (double a) (halve b) n))
-        (else (x-iter a (- b 1) (+ n a)))
+        ((even? b) #?=(x-iter (double a) (halve b) n))
+        (else #?=(x-iter a (- b 1) (+ n a)))
         )
     )
 
 
 (print (fast-x-iter 3 4))
-(print (fast-x-iter 3 5))
-(print (fast-x-iter 1 99))
-(print (fast-x-iter 4 99))
+;; (print (fast-x-iter 3 5))
+;; (print (fast-x-iter 1 99))
+;; (print (fast-x-iter 4 99))

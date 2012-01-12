@@ -13,8 +13,8 @@
 ;; use pencile to understand it
 (define (fast-x a b)
   (cond ((= b 1) a)
-        ((even? b) (fast-x (double a) (halve b)))
-        (else (+ a (fast-x  a (- b 1))))
+        ((even? b) #?=(fast-x (double a) (halve b)))
+        (else #?=(+ a (fast-x  a (- b 1))))
         )
   )
 
