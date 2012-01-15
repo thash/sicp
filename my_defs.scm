@@ -19,3 +19,8 @@
 (define (square x) (* x x))
 (define (cube x) (* x x x))
 
+(define (power x n)
+  (if (= n 1)
+    x
+    (* x (power x (- n 1)))))
+
