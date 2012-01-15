@@ -14,9 +14,6 @@
         (else (find-divisor n (+ test-divisor 1)))
         ))
 
-(define (divides? a b)
-  (= (remainder b a) 0))
-
 (define (prime? n)
   (= n (smallest-divisor n)))
 
@@ -51,14 +48,19 @@
            (timed-prime-test st))
          (search-for-primes-iter (+ st 1) ed))))
 
-;(search-for-primes 1000 1100)
+(search-for-primes 1000 1100)
 (newline)
 (display "---------")
-;(search-for-primes 10000 10100)
+(search-for-primes 10000 10100)
 (newline)
 (display "---------")
-;(search-for-primes 100000 100100)
+(search-for-primes 100000 100100)
 (newline)
 (display "---------")
 (search-for-primes 1000000 1000100)
 
+(newline)
+(display "===========================================")
+(timed-prime-test 1009)
+(timed-prime-test 1013)
+(timed-prime-test 1019)
