@@ -16,7 +16,7 @@
   (if (fast-prime? n times)
     (report-prime (- (runtime) start-time))))
 
-(trace expmod)
+;(trace expmod)
 
 (timed-prime-test3 1009 100)
 ; (timed-prime-test3 1013 100)
