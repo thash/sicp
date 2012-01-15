@@ -1,6 +1,12 @@
 (use slib)
 (require 'trace)
 
+; procedures(?) I've required so far:
+; trace, random
+
+(define true #t)
+(define false #f)
+
 ;; return micro seconds.
 (define (runtime)
   (use srfi-11)

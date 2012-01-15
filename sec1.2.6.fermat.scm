@@ -16,8 +16,8 @@
     (= (expmod a n n) a))
   (try-it (+ 1 (random (- n 1)))))
 
-(define (test-prime? n times)
+(define (fast-prime? n times)
   (cond ((= times 0) true)
-        ((fermat-test n) (test-prime? n (- times 1)))
+        ((fermat-test n) (fast-prime? n (- times 1)))
         (else false)))
 
