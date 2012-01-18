@@ -1,3 +1,6 @@
+
+;; この問題はやらなくていい＞＜
+
 (add-load-path ".")
 (load "my_defs")
 

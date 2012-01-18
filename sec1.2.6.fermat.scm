@@ -1,3 +1,6 @@
+(add-load-path ".")
+(load "my_defs")
+
 (define (square x) (* x x))
 
 (define (expmod base exp m)
@@ -21,3 +24,4 @@
         ((fermat-test n) (fast-prime? n (- times 1)))
         (else false)))
 
+(expmod 2 2 2)

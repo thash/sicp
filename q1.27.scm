@@ -19,9 +19,13 @@
              (iter (- a 1)))))
   (iter (- n 1)))
 
+; (trace expmod)
+
 (print (fermat-test2 560))
 
 ; Carmichael Numbers
+(newline)
+(display "; Carmichael Numbers")
 (print (fermat-test2 561))
 (print (fermat-test2 1105))
 (print (fermat-test2 1729))
