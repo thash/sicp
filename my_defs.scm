@@ -19,7 +19,7 @@
 (define (square x) (* x x))
 (define (cube x) (* x x x))
 
-(define (power x n)
+(define (power x n) ; xのn乗
   (if (= n 1)
     x
     (* x (power x (- n 1)))))

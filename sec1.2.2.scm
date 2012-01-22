@@ -1,3 +1,6 @@
+(add-load-path ".")
+(load "my_defs")
+
 (define (fibonacci n)
   (if (= n 0)
     0
@@ -5,6 +8,7 @@
       1
       (+ (fibonacci (- n 1)) (fibonacci (- n 2))))))
 
+(trace fibonacci)
 (print (fibonacci 6))
 
 ;; ---------------
@@ -24,4 +28,5 @@
 ;;    (fib-iter (+ a b) a (+ counter 1) max-count)
 ;;   ))
 
+(trace fib-iter)
 (print (fib 6))
