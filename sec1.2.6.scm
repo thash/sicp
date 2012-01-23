@@ -5,8 +5,8 @@
 
 (define (find-divisor n test-divisor)
   (cond ((> (square test-divisor) n) n)
-        ((divides? test-divisor n) #?=test-divisor)
-        (else (find-divisor n #?=(+ test-divisor 1)))
+        ((divides? test-divisor n) test-divisor) ;#?= for test-divisor
+        (else (find-divisor n (+ test-divisor 1)))
         ))
 
 (define (divides? a b)
@@ -19,4 +19,4 @@
 ;; (print (prime? 3)) ;;=> #t (true)
 
 
-(print (prime? 209))
+;(print (prime? 209))
