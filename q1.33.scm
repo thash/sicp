@@ -34,7 +34,8 @@
     (= 1 (gcd a n)))
   (filtered-accumulate coprime * 1 identity 1 inc n))
 
-(print (product-of-gcds-smaller-than 10))
+;(print (product-of-gcds-smaller-than 10))
+(print (product-of-gcds-smaller-than 20))
 
 ; filterとして渡す手続きはaのみを引数にとるので、内部でcoprimeを定義してやる。
 
