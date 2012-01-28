@@ -13,6 +13,8 @@
   (let-values (((a b) (sys-gettimeofday)))
               (+ (* a 1000000) b)))
 
+(define (average x y)
+  (/ (+ x y) 2))
 (define (divides? a b)
   (= (remainder b a) 0))
 
