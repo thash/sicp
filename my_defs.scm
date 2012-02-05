@@ -1,4 +1,5 @@
 (use slib)
+(use math.const)
 (require 'trace)
 
 ; procedures(?) I've required so far:
