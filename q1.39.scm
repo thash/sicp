@@ -5,9 +5,8 @@
   (define (iter i)
     (if (= i k)
       (/ (n k) (d k))
-      (/ (n i) (+ (d i) (iter (+ i 1))))
-      ))
-  ;(trace iter)
+      (/ (n i) (+ (d i) (iter (+ i 1))))))
+  (trace iter)
   (iter 1)
   )
 
@@ -24,13 +23,13 @@
   )
 
 ; x is radian,
-; -2PI <= rad <= 2PI
+; -2PI <= rad <= 2PI. x is any read number
 (define (tan-cf x k)
   (cont-frac
-    (lambda (x) (if (= x 1) x (- (* x x)))) ; ここ。マイナス符号付けて返す
-    (lambda (x) (- (* 2 x) 1)) ; d
+    (lambda (i) (if (= i 1) x (- (* x x)))) ; ここ。マイナス符号付けて返す
+    (lambda (i) (- (* 2 i) 1)) ; d
     k
     ))
 
-
 (print (exact->inexact (tan-cf 1.0 100)))
+
