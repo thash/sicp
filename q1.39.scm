@@ -33,3 +33,19 @@
 
 (print (exact->inexact (tan-cf 1.0 100)))
 
+
+; another answer in the study session
+
+(define (tan-cf2 x k)
+  (define (iter i)
+    (cond ((> i k) 0)
+          ((= i 1) (/ x (- 1 (iter 2))))
+          (else
+            (/ (* x x) (- (- (* 2 i) 1) (iter (+ i 1)))))
+          )
+    )
+  (trace iter)
+  (iter 1)
+  )
+(tan-cf2 1.0 3)
+
