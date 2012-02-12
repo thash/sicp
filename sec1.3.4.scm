@@ -24,5 +24,4 @@
   (fixed-point (average-damp (lambda (y) (/ x y)))
                1.0))
 
-(print (sqrt 2))
 
