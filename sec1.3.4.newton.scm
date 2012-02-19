@@ -23,7 +23,7 @@
 ;(print (sqrt 4))
 
 
-(define (fixed-point-of-transform g transform guess)
+(define (fixed-point-of-transform g transform guess) ; transform ... 推測値をずらす手続き
   (fixed-point (transform g) guess))
 
 (define (sqrt3 x)

@@ -20,6 +20,7 @@
 (define (average-damp f)
   (lambda (x) (average x (f x))))
 
+; fixed-pointは手続きを第一引数に取る。
 (define (sqrt x)
   (fixed-point (average-damp (lambda (y) (/ x y)))
                1.0))
