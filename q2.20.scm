@@ -2,6 +2,9 @@
 ; (define (f x y . z) <body>)
 ; (f 1 2 3 4 5 6)
 ; => x=1, y=2, z=(3 4 5 6)
+;
+; lamndaを使って定義することも出来る
+; (define f (lambda (x y . z) <body>))
 
 ; "1つかそれを越える個数の整数を取り、先頭と同じ偶奇性を持つ引数のリストを返す手続き"
 (define (same-parity x . y)
