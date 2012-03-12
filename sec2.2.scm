@@ -30,7 +30,8 @@
 
 ; consでさらに組み合わせる。
 (cons 5 one-through-four)
-(cons one-through-four 5) ; => (1 2 3 4 5) にならない?
+(cons one-through-four 5)
+; => (1 2 3 4 5) にならない
 
 
 ; リスト演算

@@ -38,7 +38,7 @@
       (iter (cdr things)
             (cons answer
                   (square (car things))))))
-  (trace iter)
+  ; (trace iter)
   (iter items ()))
 
 (square-list2 (list 1 2 3 4 5))
