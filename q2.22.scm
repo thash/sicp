@@ -9,7 +9,7 @@
       (iter (cdr things)
             (cons (square (car things))
                   answer))))
-  ;(trace iter)
+  (trace iter)
   (iter items ()))
 
 (square-list (list 1 2 3 4 5))
@@ -38,7 +38,7 @@
       (iter (cdr things)
             (cons answer
                   (square (car things))))))
-  ; (trace iter)
+  (trace iter)
   (iter items ()))
 
 (square-list2 (list 1 2 3 4 5))
@@ -52,6 +52,9 @@
 ; (() . 1)
 ; gosh> (cons 1 2)
 ; (1 . 2)
+;
+;  => 指摘: listはconsの表す構造の一形態に過ぎないので特別と言うことはない。
+;           単にこのconsの形はlistで表現できないからlispがそう見せてくれないだけか
 
 ; check: trace iter
 ; CALL iter (1 2 3 4 5) ()
@@ -64,5 +67,12 @@
 ;     RETN iter ((((...) . 9) . 16) . 25)
 ;   RETN iter ((((...) . 9) . 16) . 25)
 ; RETN iter ((((...) . 9) . 16) . 25)
+
+;;; 解説議論 ;;;
+; 反復(1の方法)でやって、逆順になった奴をひっくり返すという方法が使えるのではないか
+; 再帰よりも反復がスペースの節約になる(末尾再帰はスペースを消費しない)
+; appendはn^2 の計算コスト。listを末尾までなめて最後に付けようとするのでコストがかかる
+;
+; 宿題: Gaucheのmap実装は？
 
 

@@ -1,3 +1,6 @@
+(add-load-path ".")
+(load "my_defs")
+
 ; 任意の数の引数を取る手続きの定義
 ; (define (f x y . z) <body>)
 ; (f 1 2 3 4 5 6)
@@ -15,15 +18,14 @@
         (if (proc (car vals))
           (iter (cdr vals) (append result (list (car vals))))
           (iter (cdr vals) result))))
+    (trace iter)
     (iter vals ()))
 
   (cond ((even? x) (true-list even? (cons x y)))
         ((odd? x) (true-list odd? (cons x y)))))
 
 ; 与えられたprocがtrueのものだけのリストを返す手続きtrue-listを内部で定義
-
-
-
+;
 ; 引数のリストから偶数だけ返す手続き(↑の部分)
 ; (define (returneven vals)
 ;   (define (iter vals result)
@@ -35,3 +37,14 @@
 ;         (iter (cdr vals) result))))
 ;   (iter vals ()))
 
+; 足し算して偶数なら同じparity、という考え方から作った回答 from @haruyamaさん
+(define (same-parity x . y)
+  (define (iter items)
+    (cond ((null? items) ())
+          ((even?  (+ x (car items)))
+           (cons (car items) (iter (cdr items))))
+          (else (iter (cdr items)))))
+  (trace iter)
+  (cons x (iter y)))
+
+; これはいいな。
