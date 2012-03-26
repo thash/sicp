@@ -26,3 +26,4 @@
 ; sample tree data
 (define x (list 1 (list 2 (list 3 4) 5) (list 6 7)))
 
+; treeにありがちなこと: null, not pair, elseの再帰処理

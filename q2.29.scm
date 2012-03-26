@@ -1,4 +1,8 @@
-; ヒャッハー
+; ヒャッハー http://d.hatena.ne.jp/nTeTs/20090716/1247671614
+;
+; 二進モービル => 原著では binary mobile.
+; http://www.google.co.jp/search?q=binary+mobile&um=1&ie=UTF-8&hl=ja&tbm=isch&source=og&sa=N&tab=wi&ei=0EhwT8OeMIOJmQWunNS3Bg&biw=1366&bih=670&sei=EklwT4EkocqYBYfspKUG
+; インテリアとかであるやつ。 正しい日本語訳は「モービル」だそうで。
 ; 錘(おもり)
 
 (define (make-mobile left right)
@@ -26,6 +30,12 @@
 (define (right-branch mobile)
   (cadr mobile))
 
+; このふたつ忘れてた...
+(define (branch-length branch)
+  (car branch))
+(define (branch-structure branch)
+  (cadr branch))
+
 ; (b). 全重量を返す手続きを書け。
 
 ; サブ手続きhas-weight?を定義。
@@ -48,6 +58,28 @@
 ; 再帰部分で (total-weight (cadr (right-branch mobile)
 ; とcadrしているのは、lengthを飛び越えてmobileを得るため
 
+; rindaiの回答 - サブ手続きbranch-weightを使う
+; どう考えてもhas-weight?よりmobile?のほうがよかった。
+(define (total-weight2 mobile)
+  (+ (branch-weight (left-branch mobile))
+     (branch-weight (left-branch mobile))))
+
+(define (branch-weight branch)
+  (if (number? (branch-structure branch))
+    (branch-structure branch)
+    (total-weight2 (branch-structure branch))))
+
+; で、さらにリファクタリング。
+(define (total-weight3 mobile)
+  (define (mobile? x) (pair? x))
+  (if (mobile? mobile)
+    (+ (total-weight3 #?=(left-branch mobile))
+       (total-weight3 #?=(right-branch mobile)))
+    mobile ; pairじゃなけりゃおもりなのでただの数字として返す。
+    ))
+; あれ、うまくいかない。大きぎる値が返る。
+
+
 
 ; (c). モーメントを考えて釣り合うかどうかの判定手続きbalanced?を作る
 ; 例のWikiではtorqueだった。物理...
@@ -68,6 +100,8 @@
 (define mobile2
   (make-mobile (make-branch 2 4)
                (make-branch 8 1)))
+
+; この回答はよかろう。
 
 ; (d). listではなくconsでbranchとmobileを定義するようにした。
 

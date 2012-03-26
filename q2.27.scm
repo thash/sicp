@@ -21,3 +21,18 @@
 ; (append (deep-reverse (cdr items)) (deep-reverse (car items)))
 ; としていたが、エラー。#?=で見てみると
 ; !!!*** ERROR: list required, but got 4!!! となっていた。ので、nilとconsして強引にlistにする。
+
+
+;; ((1 2) (3 4))
+;; (3 4) (1 2)
+;; (3) 4 (2) 1
+
+; reverseはGauche組み込みであるので、こんな方法もある。これはきれいだ。
+(define (deep-reverse2 items)
+  (if (pair? items)
+    (reverse (map deep-reverse2 items))
+    items))
+; mapでitemsそれぞれの要素に対してreverse. 対象itemsがpairじゃなくなった段階でitemを返す。
+; もっとやるなら、carで一個先を見て再帰するとか。
+
+

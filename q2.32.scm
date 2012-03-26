@@ -35,3 +35,30 @@
 ; (() #0=(3) #1=(2) #2=(2 . #0#) (1) (1 . #0#) (1 . #1#) (1 . #2#))
 ;
 ; できた！けど#n=はなんだろう。
+
+
+; これはべき集合のお話。
+; http://ja.wikipedia.org/wiki/%E5%86%AA%E9%9B%86%E5%90%88
+;
+; () -> (())
+; (3) -> (() 3) ... これをどうやって作る、という考え方ですね。
+;
+; mapの引数として渡される手続き。
+; (lambda (x) (cons (car s) x))
+; sは今、xは一個前。
+;
+; subsetsをtraceするといい。
+; gosh> (subsets (list 1 2 3))
+; CALL subsets (1 2 3)
+;   CALL subsets (2 3)
+;     CALL subsets (3)
+;       CALL subsets ()
+;       RETN subsets (())
+;     RETN subsets (() (3))
+;   RETN subsets (() (3) (2) (2 3))
+; RETN subsets (() (...) (...) (...) (1) (1 ...) (1 2) (1 2 3))
+; (() #0=(3) #1=(2) #2=(2 . #0#) (1) (1 . #0#) (1 . #1#) (1 . #2#))
+;
+; 手で展開してる強者もいる
+; http://d.hatena.ne.jp/awacio/20100512/1273670118
+
