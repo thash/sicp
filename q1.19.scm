@@ -6,11 +6,11 @@
 (define (fib-iter a b p q count)
   (cond ((= count 0) b)
         ((even? count)
-         (fib-iter #?=a
-                   #?=b
-                   #?=(+ (* p p) (* q q)) ;; here is p'
-                   #?=(+ (* 2 (* p q)) (* q q)) ;; here is q'
-                   #?=(/ count 2)))
+         (fib-iter a
+                   b
+                   (+ (* p p) (* q q)) ;; here is p'
+                   (+ (* 2 (* p q)) (* q q)) ;; here is q'
+                   (/ count 2)))
         (else (fib-iter (+ (* b q) (* a q) (* a p))
                         (+ (* b p) (* a q))
                         p
