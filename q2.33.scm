@@ -24,12 +24,12 @@
 ; lambdaで表されている部分は*だったり+だったりもした。
 ; どう組み合わせるか. (proc a b)のprocに何を取るか。
 ; lambda (x y) のyはaccumulateの"処理済み"
-(define (map p sequence)
-  (accumulate
-    (lambda (x y)
-      (cons (p x) y))
-    ()
-    sequence))
+; (define (map p sequence)
+;   (accumulate
+;     (lambda (x y)
+;       (cons (p x) y))
+;     ()
+;     sequence))
 
 (define (append seq1 seq2)
   (accumulate cons seq2 seq1 ))
