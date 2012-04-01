@@ -1,0 +1,20 @@
+; sec2.2.2縺ｮcount-leaves繧誕ccumulation縺ｧ蜀榊ｮ夂ｾｩ
+
+; 蜀肴軸 accumulate
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+
+(define (count-leaves t)
+  (accumulate
+    (lambda (leaves total) (+ leaves total)) ; 適用operationはtotalへの足し合わせ
+    0 ; 初期葉の数は0
+    (map (lambda (sub-tree) ; accumulateにsequenceとして渡すのは、tに対してmapでcount-leavesしたもの
+           (if (pair? sub-tree)
+                      (count-leaves sub-tree)
+                      1)) ; pairじゃなければ葉を1個カウントアップ
+           t)))
+
