@@ -5,6 +5,7 @@
 ; 例
 (define s (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
 (accumulate-n + 0 s)
+; (cons (+ 1 4 7 10) (cons (+ 2 5 8 11) (cons (+ 3 6 9 12) ())))
 ; => (22 26 30)
 
 ; 再びaccumulate定義
