@@ -6,11 +6,11 @@
 ; ↓
 ; (...(a_n * x + a_(n-1)) * x + ... + a_1) * x + a_0
 ; 多重のxのかけ算にしてしまう。これをHorner's ruleという。
-
-(define (horner-eval x coefficient-sequence)
-  (accumulate (lambda (this-coeff higher-terms) <xxx>)
-              0
-              coefficient-sequence))
+; 
+; (define (horner-eval x coefficient-sequence)
+;   (accumulate (lambda (this-coeff higher-terms) <xxx>)
+;               0
+;               coefficient-sequence))
 ; note: coefficient = 係数
 
 ; how to use
@@ -22,4 +22,9 @@
                 (+ (* x higher-terms) this-coeff))
               0
               coefficient-sequence))
+
+; accumulateの引数になるop手続きは
+; (lambda (this-coeff higher-terms)   ; 高次から順に計算するのでこの順。
+;  (+ (* x higher-terms) this-coeff))
+
 

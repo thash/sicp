@@ -18,3 +18,17 @@
                       1)) ; pairじゃなければ葉を1個カウントアップ
            t)))
 
+; ちょっと裏技っぽい方法もある。さっきのflatten(仮)を使ってやる。
+(define (count-leaves2 t)
+  (accumulate + 0 (map (lambda (x) 1) (enumulate-tree t))))
+
+
+; うまくいかない。
+(define (count-leaves3 t)
+  (accumulate + 0 (map (lambda (subtree)
+                         (cond ((null? subtree) 0)
+                               ((pair? subtree) (count-leaves3 subtree))
+                               (else (accumulate + 0 subtree)))))))
+
+
+

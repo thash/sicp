@@ -1,6 +1,8 @@
 ;;; 2.2.3. 公認インターフェイスとしての並び(sequence)
+;;;       (conventional interface)
 (add-load-path ".")
 (load "my_defs")
+(load "q1.19")
 
 (define (sum-odd-squares tree)
   (cond [(null? tree) 0]
@@ -57,7 +59,7 @@
 
 (enumerate-interval 2 7)
 
-; 木の葉を数え上げる
+; 木の葉を数え上げる. Rubyで言うflatten.
 (define (enumerate-tree tree)
   (cond ((null? tree) ())
         ((not (pair? tree)) (list tree))

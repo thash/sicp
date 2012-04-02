@@ -29,6 +29,8 @@
 ; vector“¯Žm‚Ì"“àÏ"
 (define (dot-product v w)
   (accumulate + 0 (map * v w)))
+; (map proc list1 list2) ‚±‚ê‚à‚Ü‚½map‚ÆŒÄ‚Î‚ê‚éB
+
 ; gosh> (dot-product v v)
 ; CALL accumulate #[proc] 0 (81 64 49)
 ;   CALL accumulate #[proc] 0 (64 49)
@@ -277,3 +279,41 @@
 ; RETN accumulate-n ((30 36 42) (30 39 48) (12 15 18))
 ; ((30 36 42) (30 39 48) (12 15 18))
 
+
+; ---------------------------------------
+;
+; ##•Ê‚Ì—á
+;
+; * matrix x vector
+;
+; | 1 2 3 |   | 1 |   | 14 |
+; | 4 5 6 | x | 2 | = | 32 |
+; | 7 8 9 |   | 3 |   | 50 |
+;
+; gosh> (matrix-*-vector m v)
+; CALL accumulate #[proc] 0 (1 4 9)
+;   CALL accumulate #[proc] 0 (4 9)
+;     CALL accumulate #[proc] 0 (9)
+;       CALL accumulate #[proc] 0 ()
+;       RETN accumulate 0
+;     RETN accumulate 9
+;   RETN accumulate 13
+; RETN accumulate 14
+; CALL accumulate #[proc] 0 (4 10 18)
+;   CALL accumulate #[proc] 0 (10 18)
+;     CALL accumulate #[proc] 0 (18)
+;       CALL accumulate #[proc] 0 ()
+;       RETN accumulate 0
+;     RETN accumulate 18
+;   RETN accumulate 28
+; RETN accumulate 32
+; CALL accumulate #[proc] 0 (7 16 27)
+;   CALL accumulate #[proc] 0 (16 27)
+;     CALL accumulate #[proc] 0 (27)
+;       CALL accumulate #[proc] 0 ()
+;       RETN accumulate 0
+;     RETN accumulate 27
+;   RETN accumulate 43
+; RETN accumulate 50
+; (14 32 50)
+;
