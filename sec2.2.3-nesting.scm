@@ -15,12 +15,13 @@
         (accumulate op initial (cdr sequence)))))
 
 ; 実装 -- "For each interger i<=n, enumerate the intergers j<i, and for each such i and j generate the pair (i,j). In terms of sequence operations, we map along the sequence (enumerate-interval 1 n). For each i in this sequence, we map along the sequence (enumerate-interval 1 (- i 1)). For each j in this latter sequence, we generate the pair (list i j). This gives us a sequence of pairs for each i. Combining all the sequences for all the i (by accumulating with append) produces the required sequence of pairs"
-(accumulate append
-            nil
-            (map (lambda (i)
-                   (map (lambda (j) (list i j))
-                        (enumerate-interval 1 (- i 1))))
-                 (enumerate-interval 1 n)))
+;
+; (accumulate append
+;             nil
+;             (map (lambda (i)
+;                    (map (lambda (j) (list i j))
+;                         (enumerate-interval 1 (- i 1))))
+;                  (enumerate-interval 1 n)))
 
 ; mappingとaccumulatingの組み合わせを一般化しよう
 (define (flatmap proc seq)
