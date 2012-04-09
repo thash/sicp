@@ -7,6 +7,12 @@
     ()
     (cons low (enumerate-interval (+ low 1) high))))
 
+; Tips: consでlistを作る時の注意。最終項とnilをconsするべき
+; gosh> (cons 1 (cons 2 (cons 3 4)))
+; (1 2 3 . 4)
+; gosh> (cons 1 (cons 2 (cons 3 (cons 4 ()))))
+; (1 2 3 4)
+
 ; accumulate -- sec2.2.3より
 (define (accumulate op initial sequence)
   (if (null? sequence)
@@ -19,11 +25,12 @@
 ; (accumulate append
 ;             nil
 ;             (map (lambda (i)
-;                    (map (lambda (j) (list i j))
+;                    (map (lambda (j) (list i j))  ; <= ここのlistで, iやjといったlistをlistしてる
 ;                         (enumerate-interval 1 (- i 1))))
 ;                  (enumerate-interval 1 n)))
 
 ; mappingとaccumulatingの組み合わせを一般化しよう
+; listのlistから1つのlistを作るflatmap.
 (define (flatmap proc seq)
   (accumulate append () (map proc seq)))
 
@@ -47,15 +54,18 @@
 
 
 ; この手続きの別の応用。集合Sのすべての順列を生成する。
+; permutation of (1 2 3) is ((1 2 3) (1 3 2)...)
+; require "flatmap"
 (define (permutations s)
   (if (null? s)
     (list ())
     (flatmap (lambda (x)
                (map (lambda (p) (cons x p))
-                    (permutations (remove x s))))
+                    (permutations (remove x s)))) ; 除いたものとconsする
              s)))
 
 ; ↑のremoveはこうやって定義する
+; require "filter"
 (define (remove item sequence)
   (filter (lambda (x) (not (= x item)))
           sequence))

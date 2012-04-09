@@ -43,6 +43,35 @@
           (next-column-safe? new-row (cdr positions) (+ 1 row-offset))))))
   (next-column-safe? (car positions) (cdr positions) 1))
 
+; 引数っぽいのは1..board-size. まずboard-size = 4.
+;            (map (lambda (new-row)
+;                   (adjoin-position new-row k rest-of-queens)) ; adjoin-position = ?
+;                 (enumerate-interval 1 board-size)))
+; new-rowには(1 2 3 4)が順に入ってくる
+;
+; 基本的な考え方 by @haruyamaさん
+; filterの前で全ての可能性を洗い出す。
+; 1列目の1におかれているとき, 2個目をおいたときの可能性は (1 1) (1 2) (1 3) (1 4)
+; そいつをfilterにかけて(1 3) (1 4)がのこる。これを続けていく。
+;
+; アルゴリズムについて by あんちべさん
+; すべての可能性をあたると64C4で4億を超えるとか(?)。
+; バックトラック法、という方法を使う。
+; 1列に1個だけおける、という前提自体が「同じ行におくと即死するから」である。
+;
+;
+; 肝心の safe? で何をしているか。
+; safe?は引数にcolumnとpositionsを取る。
+;
+; (if (or (= this-row new-row)
+;         (= (+ this-row row-offset) new-row)
+;         (= (- this-row row-offset) new-row))
+;
+; rowが同じだったら飛車で死
+;
+
+
+; queens 1,2,3には解がない。()が帰る。
 ; gosh> (queens 4) {{{
 ; CALL safe? 1 (1)
 ; RETN safe? #t

@@ -36,3 +36,9 @@
 ; RETN iter (3 2 1)
 ; (3 2 1)
 
+; fold-leftの復習(q2.38参照)
+; fold-left op initial sequence
+; (iter result rest)
+;   ....
+; iter initial sequence で発火
+
