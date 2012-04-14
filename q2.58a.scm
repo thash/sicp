@@ -16,7 +16,7 @@
 ; gosh> (eq? '+ (cadr '(2 + 3)))
 ; #t
 ;
-; と思ったが単に(list 2 '+ 3)とすればよかった。
+; ...と思ったが単に(list 2 '+ 3)とすればよかった。これで(2 + 3)になるわ
 
 ; sum, product, exponentiation系を再定義しよう。
 (define (sum? x)
@@ -78,13 +78,5 @@
                          (make-exponentiation (base exp) (make-sum (exponent exp) -1)))
            (deriv (base exp) var)))
         (else)))
-
-
-; (b). より人間らしい形に近づける。不用なカッコは除き、複数の項を演算子で繋げるようにする。つまり
-;      (x + 3 * (x + y + 2)) という表記を許す。
-
-; これは計算の優先順序も知ってないといけない
-
-
 
 
