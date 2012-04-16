@@ -24,9 +24,9 @@
 (define (cube x) (* x x x))
 
 (define (power x n) ; xのn乗
-  (if (= n 1)
-    x
-    (* x (power x (- n 1)))))
+  (cond ((= n 0) 1)
+        ((= n 1) x)
+    (else (* x (power x (- n 1))))))
 
 ; from q1.16
 (define (fast-expt b n)

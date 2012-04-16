@@ -1,9 +1,7 @@
 (add-load-path ".")
 (load "sec2.3.2")
+(load "my_defs") ; for power
 
-(define (power x n)
-  (if (= n 1) x
-    (* x (power x (- n 1)))))
 
 (define (exponentiation? x)
   (and (pair? x) (eq? (car x) '**)))
