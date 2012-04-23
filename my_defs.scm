@@ -36,3 +36,8 @@
   (cond ((= n 0) a)
         ((even? n) (fast-expt-iter (square b) (/ n 2) a))
         (else (fast-expt-iter b (- n 1) (* a b)))))
+
+(define-syntax eqt
+  (syntax-rules ()
+                ((_ a b)
+                 (test* (quote b) a b))))

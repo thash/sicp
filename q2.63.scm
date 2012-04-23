@@ -17,7 +17,7 @@
                     (cons (entry tree)
                           (copy-to-list (right-branch tree)
                                         result-list)))))
-  (trace copy-to-list)
+ ; (trace copy-to-list)
   (copy-to-list tree '()))
 
 ; (a). 2つの手続きはすべての木に対して同じ結果を生じるか。そうでなければ、結果はどう違うか。図2.16のような木からどのようなリストを生じるか。
