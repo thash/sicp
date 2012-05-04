@@ -24,6 +24,9 @@
         (append (symbols left) (symbols right))
         (+ (weight left) (weight right))))
 
+; gosh> (make-code-tree (make-leaf 'A 4) (make-leaf 'B 1))
+; ((leaf A 4) (leaf B 1) (A B) 5)
+; caddr => (A B), cadddr => 5
 (define (left-branch tree) (car tree))
 (define (right-branch tree) (cadr tree))
 (define (symbols tree)
@@ -34,7 +37,6 @@
   (if (leaf? tree)
     (weight-leaf tree)
     (cadddr tree)))
-; このcadddrは？
 
 
 (load "./my_defs")
