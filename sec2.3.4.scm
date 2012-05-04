@@ -65,6 +65,7 @@
         (else (cons (car set)
                     (adjoin-set x (cdr set))))))
 
+; 対のリストを葉の順序づけられた集合へ変換する
 (define (make-leaf-set pairs)
   (if (null? pairs)
     '()

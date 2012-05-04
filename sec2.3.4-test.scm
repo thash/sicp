@@ -1,0 +1,25 @@
+(load "./sec2.3.4")
+(use gauche.test)
+
+(test-start "sec2.3.4")
+(test-section "make-code-tree")
+(eqr (make-code-tree (make-leaf 'A 4) (make-leaf 'B 1))
+     => '((leaf A 4) (leaf B 1) (A B) 5))
+
+(test-section "adjoin-set")
+(eqr (adjoin-set '(leaf A 1) ())
+     => '((leaf A 1)))
+(eqr (adjoin-set '(leaf B 6) '((leaf A 1)))
+     => '((leaf A 1) (leaf B 6)))
+(eqr (adjoin-set '(leaf C 2) '((leaf A 1) (leaf B 6)))
+     => '((leaf A 1) (leaf C 2) (leaf B 6)))
+
+(test-section "make-leaf-set")
+(eqr (make-leaf-set ()) => '())
+(eqr (make-leaf-set (list (list 'A 4) (list 'B 2)))
+     => '((leaf B 2) (leaf A 4)))
+(eqr (make-leaf-set '((A 4) (B 2)))
+     => '((leaf B 2) (leaf A 4)))
+(eqr (make-leaf-set '((C 1) (A 4) (B 2)))
+     => '((leaf C 1) (leaf B 2) (leaf A 4)))
+

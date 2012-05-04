@@ -41,3 +41,9 @@
   (syntax-rules ()
                 ((_ a b)
                  (test* (quote b) a b))))
+
+(define-syntax eqr
+  (syntax-rules ()
+                ((_ b => a)
+                 (test* (quote b) a b))))
+
