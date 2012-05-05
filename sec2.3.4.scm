@@ -50,7 +50,7 @@
           (cons (symbol-leaf next-branch)
                 (decode-1 (cdr bits) tree))
           (decode-1 (cdr bits) next-branch)))))
-  (trace decode-1)
+;  (trace decode-1)
   (decode-1 bits tree))
 
 (define (choose-branch bit branch)
