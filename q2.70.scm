@@ -19,7 +19,23 @@
 
 ; (display (encode message h-tree))
 ; => (1 1 1 1 1 1 1 0 0 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 1 1 0 1 1 0 1 1)
+;   92bit(たぶん)
 
+; decodeの確認
 ; (display (decode '(1 1 1 1 1 1 1 0 0 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 1 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 1 1 0 1 1 0 1 1) h-tree))
 ; => (GET A JOB SHA NA NA NA NA NA NA NA NA GET A JOB SHA NA NA NA NA NA NA NA NA WAH YIP YIP YIP YIP YIP YIP YIP YIP YIP SHA BOOM)
+
+
+; 固定長符号 - 以下のように1単語3bitになるので、
+; A    000
+; BOOM 001
+; GET  010
+; JOB  011
+; NA   100
+; SHA  101
+; YIP  110
+; WAH  111
+;
+
+(* 3 (length message)) ; => 108bit.
 
