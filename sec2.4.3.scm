@@ -14,6 +14,14 @@
 ;   * (put <op> <type> <item>) => <item>を、"表"の<op> x <type>の所に設定する。
 ;   * (get <op> <type>) => 取り出す。何も無ければfalseを返す。
 ; key-value的な対応。op x typeの組をkeyとして表に対応づける。 軸が演算と型のふたつだからできる。
+;
+; 仮定されてはいるけど、実際に動かすためにtableとget/putを実装する。
+;
+;   section3.3.3. 表の表現。
+;   Q3.25: 任意個数のキーを持つ表を作れ、という問題。
+(load "./sec3.3.3")
+
+
 
 ; rectangularの体系をまとめたpackage
 (define (install-rectangular-package)
