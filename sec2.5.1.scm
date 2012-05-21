@@ -75,6 +75,7 @@
 ;; 2.4.1を元に、複素数パッケージcomplexを作る。
 (define (install-complex-package)
   ;; 直行座標と極座標パッケージから取り入れた手続き
+  ;;  -- rectangularとpolarの手続きが既に入って無いと行けない。
   (define (make-from-real-imag x y)
     ((get 'make-from-real-imag 'rectangular) x y))
   (define (make-from-mag-ang r a)
