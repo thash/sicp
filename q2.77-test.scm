@@ -15,6 +15,8 @@
 ; (eqr (magnitude z)
 ;      => ')
 
+; 2段tagになってる。
+
 ; after install additional put...
 (install-additional-complex)
 (eqr (magnitude z)
@@ -32,6 +34,6 @@
 
 ; 1. apply-generic magnitude (complex rectangular 1 . 2)
 ; 2. apply-generic magnitude (rectangular 1 . 2)
-;   と、2かい呼び出されている。
+;   と、2かい呼び出されている。complex tagを取るところと、rectangular tagを取るところ。
 
 
