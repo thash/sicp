@@ -22,7 +22,6 @@
 (load "./sec3.3.3")
 
 
-
 ; rectangularの体系をまとめたpackage
 (define (install-rectangular-package)
   ; 内部手続き

@@ -22,5 +22,3 @@
 ; (magnitude z)
 ;  => test参照. 2回
 
-
-
