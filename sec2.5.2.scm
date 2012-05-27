@@ -3,7 +3,6 @@
 ;;   いままで定義した型は完全に独立であったが、
 ;;   この節では「複素数を通常の数に足す」というような型の境界を越える演算を考える。
 (load "./q2.77") ;; includes 2.4.2, 2.4.3, 2.5.1, 3.3.3.
-(load "./sec2.5.2-coercion")
 
 ;;   1つの方法: 演算する型の組み合わせ事に別の手続きを設計する
 
@@ -15,7 +14,7 @@
      (lambda (z x) (tag (add-complex-to-schemenum z x))))
 
 ;; 問題点: 拡張に弱い。型間の演算定義が、型自体の定義の数よりも多くなる。
-;;         型Aと型B間の演算はどちらのパッケージに含めるべきか、一貫した基準が持てない。
+;;         型A-型B間の演算はどちらのパッケージに含めるべきか、一貫した基準が持てない。
 
 ;; 【強制型変換】
 ;; 例: scheme-numberからcomplexへの変換
@@ -23,7 +22,7 @@
   (make-complex-from-real-imag (contents n) 0))
 
 ;; 強制型変換表に格納する
-;;   本文中にはないがget/put-coercionで利用するための強制型変換テーブルを定義
+;;   本文中には記述がないが, get/put-coercionを利用するために強制型変換テーブルを定義
 (define coercion-table (make-table))
 (define get-coercion (coercion-table 'lookup-proc))
 (define put-coercion (coercion-table 'insert-proc!))

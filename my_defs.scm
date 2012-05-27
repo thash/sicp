@@ -28,14 +28,7 @@
         ((= n 1) x)
     (else (* x (power x (- n 1))))))
 
-; from q1.16
-(define (fast-expt b n)
-  (fast-expt-iter b n 1))
-
-(define (fast-expt-iter b n a)
-  (cond ((= n 0) a)
-        ((even? n) (fast-expt-iter (square b) (/ n 2) a))
-        (else (fast-expt-iter b (- n 1) (* a b)))))
+;; removed fast-expt => use default "expt"
 
 (define-syntax eqt
   (syntax-rules ()

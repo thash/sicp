@@ -26,3 +26,7 @@
 (eqr (scheme-number->complex (make-scheme-number 3))
      => '(complex rectangular 3 . 0)) ;; 今度は => '(rectangular 3 . 0)) ではなかった
 
+(test-section "coercion-table")
+(put-coercion 'scheme-number 'complex scheme-number->complex)
+(eqr (get-coercion 'scheme-number 'complex)
+     => scheme-number->complex)
