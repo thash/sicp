@@ -20,11 +20,10 @@
 
 (eqr (add-complex-to-schemenum z n)
      => '(rectangular 6 . 2))
-; TODO: q2.77で予測した (complex rectangular 1 . 2)と違う理由
 
 (test-section "scheme-number->complex")
 (eqr (scheme-number->complex (make-scheme-number 3))
-     => '(complex rectangular 3 . 0)) ;; 今度は => '(rectangular 3 . 0)) ではなかった
+     => '(complex rectangular 3 . 0))
 
 (test-section "coercion-table")
 (put-coercion 'scheme-number 'complex scheme-number->complex)

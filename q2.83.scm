@@ -2,11 +2,6 @@
 
 ;; 整数(integer) ⊆ 有理数(rational) ⊆ 実数(real) ⊆ 複素数(complex)
 
-; install-*-package の中に以下の3つを定義する
-;   - tag付け
-;   - make-*
-;   - raise
-
 ; 整数 ---------------------
 (define (install-integer-package)
   (define (tag x) (attach-tag 'integer x))
