@@ -65,7 +65,10 @@
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
   (put 'raise '(rational)
-       (lambda (x) (make-scheme-number (/ (numer x) (denom x)))))
+       ;;(lambda (x) (make-scheme-number (/ (numer x) (denom x)))))
+       (lambda (x) (make-scheme-number (* 1.0 (/ (numer x) (denom x))))))
+
+  ; 整数/整数は有理数になる
 
   'installed.)
 

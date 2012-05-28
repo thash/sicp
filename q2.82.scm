@@ -18,6 +18,13 @@
               (find-coercion (cdr type-tags)))
               )))))))))
 
+; この方針では、
+; 整数 x 複素数という演算があったばあいうまくいかない。
+
+(hoge c r i)
+; ↑ R->C, I->C でCに合わせればOK
+; C->R は一般にできない
+
 ;        (if (= (length args) 2)
 ;          (let ((type1 (car type-tags))
 ;                (type2 (cadr type-tags))

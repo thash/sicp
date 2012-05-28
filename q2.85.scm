@@ -23,8 +23,8 @@
   (put 'raise '(integer)
        (lambda (n) (make-rational n 1))) ; }}}
 
-  (put 'drop '(integer)
-       (lambda (x) (error "Cannot drop integer." x)))
+  (put 'project '(integer)
+       (lambda (x) (error "Cannot project integer." x)))
 
   'installed.)
 
@@ -68,10 +68,13 @@
   (put 'raise '(rational)
        (lambda (x) (make-scheme-number (/ (numer x) (denom x))))) ; }}}
 
-  (put 'drop '(rational)
-       (lambda (x) (if (= (denom x) 1)
-                     (make-integer (numer x))
-                     (tag x))))
+  (put 'project '(rational)
+       (lambda (x) (make-integer (numer x))))
+
+;  (put 'project '(rational)
+;       (lambda (x) (if (= (denom x) 1)
+;                     (make-integer (numer x))
+;                     (tag x))))
 
   'installed.)
 
@@ -92,7 +95,7 @@
   (put 'raise '(scheme-number)
        (lambda (n) (make-complex-from-real-imag n 0))) ; }}}
 
-  (put 'drop '(scheme-number)
+  (put 'project '(scheme-number)
        (lambda (x) (if (inexact? x)
                      (tag x)
                      (make-rational x 1))))
@@ -137,13 +140,12 @@
   (put 'make-from-mag-ang 'complex
        (lambda (r a) (tag (make-from-mag-ang r a)))) ; }}}
 
-  (put 'drop '(complex)
+  (put 'project '(complex)
        (lambda (z) (if (= (imag-part z) 0)
                      (make-scheme-number (real-part z))
                      (tag z))))
 
   'installed.)
-
 
 (define (make-integer n)
   ((get 'make 'integer) n))
@@ -157,4 +159,38 @@
 (define (make-complex-from-mag-ang r a)
   ((get 'make-from-mag-ang 'complex) r a))
 
-(define (drop x) (apply-generic 'drop x))
+(define (project x) (apply-generic 'project x))
+
+;; ----------------------------------------------
+
+(define (install-project-package)
+  (define (complex->scheme-number x)
+    (attach-tag 'scheme-number (real-part x)))
+  (define (scheme-number->rational x)
+    (if (inexact? (contents x)) 
+      (attach-tag 'scheme-number x)
+      (make-rational x 1))
+    (define (rational->integer x)
+      (attach-tag 'integer ())))
+
+
+
+
+
+;; ------------------
+
+gosh> (raise (project r1))
+(rational 2 . 1)
+gosh> (raise (project r2))
+(rational 2 . 1)
+gosh> r1
+(rational 2 . 3)
+gosh> r2
+(rational 2 . 1)
+
+
+;; equ?を使う
+;;   このシステムを客観的に見るとdropしないほうがいい。
+;;   明示的にcastするとかにしたほうがいい
+
+
