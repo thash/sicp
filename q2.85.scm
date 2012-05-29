@@ -179,14 +179,14 @@
 
 ;; ------------------
 
-gosh> (raise (project r1))
-(rational 2 . 1)
-gosh> (raise (project r2))
-(rational 2 . 1)
-gosh> r1
-(rational 2 . 3)
-gosh> r2
-(rational 2 . 1)
+;; gosh> (raise (project r1))
+;; (rational 2 . 1)
+;; gosh> (raise (project r2))
+;; (rational 2 . 1)
+;; gosh> r1
+;; (rational 2 . 3)
+;; gosh> r2
+;; (rational 2 . 1)
 
 
 ;; equ?を使う
