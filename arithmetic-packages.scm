@@ -76,6 +76,9 @@
        (lambda (n d) (tag (make-rat n d))))
   (put 'equ? '(rational rational)
        (lambda (x y) (equal? x y)))
+  (put '=zero? '(rational)
+       (lambda (x) (eq? (numer x) 0)))
+
   (put 'raise '(rational)
        (lambda (x) (make-scheme-number (* 1.0 (/ (numer x) (denom x))))))
 
@@ -98,6 +101,9 @@
        (lambda (x) (tag x)))
   (put 'equ? '(scheme-number scheme-number)
        (lambda (x y) (eq? x y)))
+  (put '=zero? '(scheme-number)
+       (lambda (x) (eq? (contents x) 0)))
+
   (put 'raise '(scheme-number)
        (lambda (n) (make-complex-from-real-imag n 0)))
   'installed.) ;; }}}
@@ -188,6 +194,8 @@
 
   (put 'equ? '(complex complex)
        (lambda (x y) (equal? x y)))
+  (put '=zero? '(complex)
+       (lambda (x) (eq? (imag-part x) 0)))
 
   (put 'project '(complex)
        (lambda (z) (if (= (imag-part z) 0)
