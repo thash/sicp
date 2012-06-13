@@ -1,6 +1,14 @@
 (load "./q2.84")
+(load "./q2.78") ;; tagなしscheme-number
 
-;; q2.84.scm にdropを追加
+;; 設問の意味をよく理解してなかった。
+;; project - 強制投射. 有理数1.2を整数1にしてしまうような。
+;; この問題の真意は
+;;   projectしたあとraiseして等しい(この等しさはq2.79のequ?が使える) = 可逆的ならレベルを下げられる
+;; というもの。
+;;
+;; そしてproject + raiseを使って「落ちるとこまで落とす」、raise-toのようなdropを定義しろという問題であった。
+
 ; 整数 ---------------------
 (define (install-integer-package)
   (define (tag x) (attach-tag 'integer x)) ; {{{
@@ -69,12 +77,9 @@
        (lambda (x) (make-scheme-number (/ (numer x) (denom x))))) ; }}}
 
   (put 'project '(rational)
-       (lambda (x) (make-integer (numer x))))
-
-;  (put 'project '(rational)
-;       (lambda (x) (if (= (denom x) 1)
-;                     (make-integer (numer x))
-;                     (tag x))))
+       (lambda (x) (if (= (denom x) 1)
+                     (make-integer (numer x))
+                     (make-integer (round (/ (numer x) (denom x)))))))
 
   'installed.)
 
@@ -95,10 +100,14 @@
   (put 'raise '(scheme-number)
        (lambda (n) (make-complex-from-real-imag n 0))) ; }}}
 
+  ;; 可能な限り標準手続きを活用。これでどや
   (put 'project '(scheme-number)
-       (lambda (x) (if (inexact? x)
-                     (tag x)
-                     (make-rational x 1))))
+       (lambda (x) (cond ((integer? x)
+                          (make-rational x 1))
+                         (else
+                           (let ((r (inexact->exact x)))
+                             (make-rational (numerator r)
+                                            (denominator r)))))))
 
   'installed.)
 
@@ -141,9 +150,7 @@
        (lambda (r a) (tag (make-from-mag-ang r a)))) ; }}}
 
   (put 'project '(complex)
-       (lambda (z) (if (= (imag-part z) 0)
-                     (make-scheme-number (real-part z))
-                     (tag z))))
+       (lambda (z) (make-scheme-number (real-part z))))
 
   'installed.)
 
@@ -163,15 +170,15 @@
 
 ;; ----------------------------------------------
 
-(define (install-project-package)
-  (define (complex->scheme-number x)
-    (attach-tag 'scheme-number (real-part x)))
-  (define (scheme-number->rational x)
-    (if (inexact? (contents x)) 
-      (attach-tag 'scheme-number x)
-      (make-rational x 1))
-    (define (rational->integer x)
-      (attach-tag 'integer ())))
+;; (define (install-project-package)
+;;   (define (complex->scheme-number x)
+;;     (attach-tag 'scheme-number (real-part x)))
+;;   (define (scheme-number->rational x)
+;;     (if (inexact? (contents x)) 
+;;       (attach-tag 'scheme-number x)
+;;       (make-rational x 1))
+;;     (define (rational->integer x)
+;;       (attach-tag 'integer ())))
 
 
 
