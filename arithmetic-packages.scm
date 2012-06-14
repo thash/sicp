@@ -249,13 +249,13 @@
     (raise-to (raise n) target-type)))
 ;; <<< q2.84.scm -------------------------------------------- }}}
 
-;; q2.84.scm
-;; raise組み込み版apply-generic
+;; q2.85.scm -- まだ入れてない。q2.85で通らないテストがあるので....
+;; drop組み込み版、"単純化"機能付きのapply-generic.
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
-        (apply proc (map contents args))
+        (drop (apply proc (map contents args)))
         (if (not (= (length args) 2))
           (error "[args] Error: No method for these types" op type-tags)
           (let ((type1 (car type-tags))

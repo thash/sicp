@@ -8,7 +8,7 @@
 
 ;; putで追加
 (put 'equ? '(scheme-number scheme-number)
-     (lambda (x y) (eq? x y)))
+     (lambda (x y) (= x y)))
 (put 'equ? '(rational rational)
      (lambda (x y) (equal? x y)))
 (put 'equ? '(complex complex)
@@ -17,3 +17,8 @@
 ;; 汎用手続き化
 (define (equ? x y) (apply-generic 'equ? x y))
 
+;; eq?では実数の等しさ判定できない。
+;;   gosh> (eq? 1 1) ;;=> #t
+;;   gosh> (eq? 10/3 10/3) ;;=> #f
+;; ふつーの"="ならできる。実数の等しさチェックはこれにしよう。
+;;   gosh> (= 10/3 10/3) ;;=> #t

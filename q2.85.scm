@@ -1,5 +1,6 @@
 (load "./q2.84")
-(load "./q2.78") ;; tagなしscheme-number
+;; (load "./q2.78") ;; tagなしscheme-number .. 79に含まれるのでコメントアウト
+(load "./q2.79") ;; equ?.
 
 ;; 設問の意味をよく理解してなかった。
 ;; project - 強制投射. 有理数1.2を整数1にしてしまうような。
@@ -32,7 +33,7 @@
        (lambda (n) (make-rational n 1))) ; }}}
 
   (put 'project '(integer)
-       (lambda (x) (error "Cannot project integer." x)))
+       (lambda (x) (make-integer x)))
 
   'installed.)
 
@@ -168,36 +169,72 @@
 
 (define (project x) (apply-generic 'project x))
 
-;; ----------------------------------------------
+;; 2.79で定義したequ?を使う.
+;; 【ハマった】
+;; integerの場合はprojectしても自分自身になるように設計したため、
+;; 判定もそれに合わせてintegerならdroppable?を常にfalseにする。
+(define (droppable? x) 
+  (if (eq? (type-tag x) 'integer) #f
+  (equ? x (raise (project x)))))
 
-;; (define (install-project-package)
-;;   (define (complex->scheme-number x)
-;;     (attach-tag 'scheme-number (real-part x)))
-;;   (define (scheme-number->rational x)
-;;     (if (inexact? (contents x)) 
-;;       (attach-tag 'scheme-number x)
-;;       (make-rational x 1))
-;;     (define (rational->integer x)
-;;       (attach-tag 'integer ())))
+(define (drop x)
+  (if (droppable? x)
+    (drop (project x))
+    x))
 
+;; そして最後にapply-genericを書き換える。これは、そのままだと
+;; (add (make-rational 4 3) (make-rational 5 3))
+;; の結果が(rational 3 . 1)になるから(integer . 3)まで落とすようにしましょうという話
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (define maybe-drop
+      ;; apply-genericで実行する手続きが以下に含まれる場合、maybe-dropは引数をそのまま返す無名関数になる。
+      (if (memq op '(equ? =zero? raise project))
+        (lambda (x) x)
+        drop))
+   ;; (trace maybe-drop)
+    (let ((proc (get op type-tags)))
+      (if proc
+        ;(and (and (newline) (display op))
+        ;     (maybe-drop (apply proc (map contents args))))
+        ;;;; (maybe-drop (apply proc (map contents args)))
+        (apply proc (map contents args))
+        (if (not (= (length args) 2))
+          (error "[args] Error: No method for these types" op type-tags)
+          (let ((type1 (car type-tags))
+                (type2 (cadr type-tags))
+                (a1 (car args))
+                (a2 (cadr args)))
+            (if (eq? type1 type2)
+              (error "[Same type] Error: No method for these types" op type-tags)
+              (let ((target-type (higher type1 type2)))
+                (apply-generic op (raise-to a1 target-type) (raise-to a2 target-type))))))))))
 
+;; 結果返すところにdrop かけるだけだと無限ループになるらしくうまくいかない。dropの実装を見直す...
 
+;; from: http://oss.timedia.co.jp/show/SICP/ex-2.85
+;; これに置き換えてみても同じ... 問題はdrop以外、別の所にあるらしい。
+;; (define (drop x)
+;;   (cond ((boolean? x) x)
+;;         ((eq? (type-tag x) 'integer) x)
+;;         (else (let ((dropped (project x)))
+;;                 (if (equ? x (raise dropped))
+;;                     (drop dropped)
+;;                     x)))))
+;;
+;;  同じく↑のページより、drop適用時にいくつかapply-genericのdrop適用から外すべきものがあったらしい。
+;;  maybe-dropがとして内部手続きとして定義。 これを使うとうまくいった！
+;; (define maybe-drop
+;;   (if (memq op '(equ? =zero? raise project))
+;;     (lambda (x) x)
+;;     drop))
+;;  理由は、apply-genericはいろんな場所に使われてしまっていたので、
+;;  drop内で使うprojectやraiseでさらにapply-genericが呼ばれ、無限手続き呼び出しが発生していた。
 
+;; [余談]
+;; このシステムはこーゆー問題だから作ったけど、客観的に見るとdropしないほうがいい。
+;; 明示的にcastする、とかにしたほうがいい
 
-;; ------------------
-
-;; gosh> (raise (project r1))
-;; (rational 2 . 1)
-;; gosh> (raise (project r2))
-;; (rational 2 . 1)
-;; gosh> r1
-;; (rational 2 . 3)
-;; gosh> r2
-;; (rational 2 . 1)
-
-
-;; equ?を使う
-;;   このシステムを客観的に見るとdropしないほうがいい。
-;;   明示的にcastするとかにしたほうがいい
-
+;;      CALL equ? 10/3 10/3
+;;      RETN equ? #f
 
