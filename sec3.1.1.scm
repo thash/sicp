@@ -33,8 +33,14 @@
 ;; make-withdrawを使って、独立な口座が作れる。
 ; (define W1 (make-withdraw 100))
 ; (define W2 (make-withdraw 100))
+; gosh> W1
+; #<closure (make-withdraw make-withdraw)>
+; gosh> (W1 20)
+; 80
+;
+; キモは、make-withdrawを使って作成したオブジェクト(?)が手続きとして呼び出し可能であること。
 
-;; 口座の他に、預け入れ(deposit)を行うオブジェクトも作ってみよう。
+;; 引出の他に、預入(deposit)機能も持つaccountオブジェクトを作る。
 (define (make-account balance)
   (define (withdraw amount)
     (if (>= balance amount)
