@@ -219,6 +219,7 @@
 (define (div x y) (apply-generic 'div x y))
 
 (define (equ? x y) (apply-generic 'equ? x y))
+(define (=zero? x) (apply-generic '=zero? x))
 
 (define (raise x) (apply-generic 'raise x))
 (define (project x) (apply-generic 'project x))
@@ -255,7 +256,8 @@
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
-        (drop (apply proc (map contents args)))
+        (apply proc (map contents args))
+        ;(drop (apply proc (map contents args))) -- これうまくいかない...
         (if (not (= (length args) 2))
           (error "[args] Error: No method for these types" op type-tags)
           (let ((type1 (car type-tags))
@@ -266,6 +268,5 @@
               (error "[Same type] Error: No method for these types" op type-tags)
               (let ((target-type (higher type1 type2)))
                 (apply-generic op (raise-to a1 target-type) (raise-to a2 target-type))))))))))
-
 
 

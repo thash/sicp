@@ -9,4 +9,8 @@
 (test-section "make-polynomial")
 (eqr (make-polynomial 'x '((1 1))) => '(polynomial x (1 1)))
 
+;; これどっちが意図した形なんだっけか
+(eqr (make-polynomial 'x '((1 1) (2 2))) => '(polynomial x (1 1) (2 2)))
+(eqr (make-polynomial 'x '(((1 1) (2 2)))) => '(polynomial x ((1 1) (2 2))))
+
 

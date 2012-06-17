@@ -98,6 +98,11 @@
         (lambda (x y) (tag (/ x y))))
   (put 'make 'scheme-number
        (lambda (x) (tag x)))
+  ;; arithmetic-packages.scm とズレてる
+  (put 'equ? '(scheme-number scheme-number)
+       (lambda (x y) (= x y)))
+  (put '=zero? '(scheme-number)
+       (lambda (x) (equ? (contents x) 0)))
   (put 'raise '(scheme-number)
        (lambda (n) (make-complex-from-real-imag n 0))) ; }}}
 

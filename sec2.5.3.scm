@@ -25,8 +25,13 @@
 ;; 汎用算術演算システムに加えるために、型タグ"polynomial"を使う.
 
 (define (install-polynomial-package)
-  ;; 内部手続き
-  ;; 多項式型の表現
+  ;; 内部手続き -- 多項式型の表現
+  ;;   variableとは変数、つまりxのことで、基本的に何でもいい。
+  ;;   term-listが((乗数 係数) (乗数 係数) (乗数 係数)...)を意味して、
+  ;;   termは1つの(乗数 係数)であり、
+  ;;   (order term) = (car term) = 乗数
+  ;;   (coeff term) = (cdr term) = 係数
+
   (define (make-poly variable term-list)
     (cons variable term-list))
   (define (variable p) (car p))

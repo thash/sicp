@@ -12,11 +12,11 @@
 ;; error    RETN type-tag #[unknown]
 
 ;; installation
-(load "./my_defs")
-(load "./sec2.4.2") ;; attach-tag, type-tag, contents
-(load "./sec2.4.3") ;; apply-generic
-(load "./sec2.5.1") ;; install-scheme-number-package, add etc
-(load "./sec3.3.3") ;; put/get
+;(load "./my_defs")
+;(load "./sec2.4.2") ;; attach-tag, type-tag, contents
+;(load "./sec2.4.3") ;; apply-generic
+;(load "./sec2.5.1") ;; install-scheme-number-package, add etc
+;(load "./sec3.3.3") ;; put/get
 
 ;;;; 旧type-tag
 ;; (define (type-tag datum)
