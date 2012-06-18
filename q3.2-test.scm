@@ -10,3 +10,8 @@
 (eqr (s 4) => 2)
 (eqr (s 'how-many-calls?) => 2)
 
+(eqr (s 'reset-count) => 0)
+(eqr (s 'how-many-calls?) => 0)
+(eqr (s 9) => 3)
+(eqr (s 'how-many-calls?) => 1)
+
