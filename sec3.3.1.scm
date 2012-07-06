@@ -36,3 +36,45 @@
 (eqr (eq? (car z2) (cdr z2)) => #f)
 
 
+;; 変数は単なる代入
+;;   手続きを使って対を実装。
+(define (mycons x y)
+  (define (dispatch m)
+    (cond ((eq? m 'car) x)
+          ((eq? m 'cdr) y)
+          (else (error "Undefined operation -- MYCONS" m))))
+  dispatch)
+
+;; gosh> (define a (mycons 1 2))
+;; gosh> (a 'car)
+;; 1
+
+;; 可変データも手続きとして実装できる。
+(define (cons x y)
+  (define (set-x! v) (set! x v))
+  (define (set-y! v) (set! y v))
+  (define (dispatch m)
+    ((cond ((eq? m 'car) x)
+           ((eq? m 'cdr) y)
+           ((eq? m 'set-car!) set-x!)
+           ((eq? m 'set-cdr!) set-y!)
+           (else (error "Undefined operation -- CONS" m)))))
+  dispatch)
+
+(define (car z) (z 'car))
+(define (cdr z) (z 'cdr))
+(define (set-car! z new-value)
+  ((z 'ser-car!) new-value)
+  z)
+
+; make-queueないのでコメントアウト。
+; (define q (make-queue))
+; (insert-queue! q 'a) ; => a
+; (insert-queue! q 'b) ; => a b
+; (delete-queue! q)    ; => b
+; (insert-queue! q 'c) ; => b c
+; (insert-queue! q 'd) ; => b c d
+; (delete-queue! q)    ; => c d
+
+
+
