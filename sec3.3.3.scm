@@ -78,6 +78,8 @@
     (define (dispatch m)
       (cond ((eq? m 'lookup-proc) lookup)
             ((eq? m 'insert-proc!) insert!)
+            ((eq? m 'lookup) lookup)
+            ((eq? m 'insert!) insert!)
             (else (display "Unknown operationnnn -- TABLE")
                   (display m))))
     dispatch))

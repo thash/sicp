@@ -1,0 +1,81 @@
+;; いままで実装した表は順序づけられていないため巨大データになると困る。
+;; そこで, 二進木で組織化された表の実装を考えよ。キーは数値だかalphabetだかで順序づけられるものと仮定する。
+;; http://wqzhang.wordpress.com/2009/07/21/sicp-exercise-3-26/
+
+(define (entry tree) (car tree))
+(define (left-branch tree) (cadr tree))
+(define (right-branch tree) (caddr tree))
+(define (make-tree entry left right)
+  (list entry left right))
+(define (adjoin-set x set)
+  (cond ((null? set) (make-tree x '() '()))
+        ((entry-= x (entry set)) set)
+        ((entry-< x (entry set))
+         (make-tree (entry set)
+                    (adjoin-set x (left-branch set))
+                    (right-branch set)))
+        ((entry-> x (entry set))
+         (make-tree (entry set)
+                    (left-branch set)
+                    (adjoin-set x (right-branch set))))))
+
+(define (lookup-tree given-key set-of-records)
+  (if (null? set-of-records)
+    #f
+    (let ((record (entry set-of-records)))
+      (cond ((= given-key (key record)) record)
+            ((< given-key (key record))
+             (lookup-tree given-key (left-branch set-of-records)))
+            ((> given-key (key record))
+             (lookup-tree given-key (right-branch set-of-records)))))))
+
+(define (key record)
+  (car record))
+(define (entry-= x y)
+  (key-= (key x) (key y)))
+(define (entry-< x y)
+  (key-< (key x) (key y)))
+(define (entry-> x y)
+  (key-> (key x) (key y)))
+
+;; 順序づけられるモノということで、すべてのkeyは整数であると仮定する。
+;; がんばればアルファベット含めた汎用化できそう。
+(define key-= =)
+(define key-< <)
+(define key-> >)
+
+(define (make-table)
+  (let ((local-table (list '*table*)))
+    (define (lookup key-list)
+      (define (lookup1 keys table)
+        (let ((subtable (lookup-tree (car keys) (cdr table))))
+          (if subtable
+            (if (null? (cdr keys))
+              (cdr subtable)
+              (lookup1 (cdr keys) subtable))
+            #f)))
+      (lookup1 key-list local-table))
+
+    (define (insert! key-list value)
+      (define (make-entry keys)
+        (if (null? (cdr keys))
+          (cons (car keys) value)
+          (cons (car keys)
+                (make-tree (make-entry (cdr keys))
+                           '() '()))))
+      (define (insert1 keys table)
+        (let ((subtable (lookup-tree (car keys) (cdr table))))
+          (if subtable
+            (if (null? (cdr keys))
+              (set-cdr! subtable value)
+              (insert1 (cdr keys) subtable))
+            (set-cdr! table (adjoin-set (make-entry keys)
+                                        (cdr table))))))
+      (insert1 key-list lookup-tree)
+      'ok)
+    (define (dispatch m)
+      (cond ((eq? m 'lookup-proc) lookup)
+            ((eq? m 'insert-proc!) insert!)
+            (else (error "Unknown operation -- TABLE" m))))
+    dispatch))
+
