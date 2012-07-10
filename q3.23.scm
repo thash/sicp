@@ -1,4 +1,8 @@
 ;; dequeは、項目が先頭と末尾のどちらでも挿入できる並び。
+;; いままでは
+;;   * "追加" => 後ろにくっつける
+;;   * "削除" => 先頭を取り出す
+;; ことしかできなかったが、それぞれの逆方向を実装しようぜという話。
 ;; "すべての演算はθ(1)ステップで達成しなければならない。"
 
 ;; http://oss.timedia.co.jp/show/SICP/ex-3.23
@@ -94,5 +98,10 @@
 (define (rear-queue queue) (queue 'rear))
 (define (empty-queue? queue) (queue 'empty?))
 (define (print-queue queue) (queue 'print))
+
+;; queueのときは先頭のpointerをぴょっと動かせば
+;; 自分の一個前に何が合うかはわからんので、自分の1個前を調べようとするとO(n)になってしまう
+;; 1個前の情報を持ってればO(1)で付け替えられる
+;;
 
 
