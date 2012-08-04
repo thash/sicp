@@ -1,6 +1,8 @@
 (load "./my_defs")
 (load "./sec3.3.5")
 
+;; 9C = 5(F - 32)
+
 (define C (make-connector))
 (define F (make-connector))
 
