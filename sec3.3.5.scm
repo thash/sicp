@@ -23,15 +23,15 @@
 
     (define (forget-my-value retractor)
       (if (eq? retractor informant)
-        (begin (set! informant #f)
-               (for-each-except retractor
-                                inform-about-value
-                                constraints))
+          (begin (set! informant #f)
+                 (for-each-except retractor
+                                  inform-about-no-value
+                                  constraints)) ;; inform-about-valueになってたミス
         'ignored))
     (define (connect new-constraint)
       (if (not (memq new-constraint constraints))
-        (set! constraints
-          (cons new-constraint constraints)))
+          (set! constraints
+                (cons new-constraint constraints)))
       (if (has-value? me)
         (inform-about-value new-constraint))
       'done)
@@ -73,7 +73,7 @@
           ((eq? request 'I-lost-my-value)
            (process-forget-value))
           (else
-            (error "Unknown request" request))))
+            (error "Unknown request -- PROBE" request))))
 
   (connect connector me)
   me)
@@ -135,7 +135,7 @@
     (cond ((eq? request 'I-have-a-value)
            (process-new-value))
           ((eq? request 'I-lost-my-value)
-           (process-new-value))
+           (process-forget-value)) ;; ここがprocess-new-valueになっていたミス
           (else
             (error "Unknown request -- ADDER" request))))
 
