@@ -50,3 +50,54 @@
                          m))))
     dispatch))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 複数の共有資源を使うとき ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 単純なserializerでは対応できない。
+
+;; 複数の共有資源を使う例
+(define (exchange account1 account2)
+  (let ((difference (- (account1 'balance)
+                       (account2 'balance))))
+    ((account1 'withdraw) difference)
+    ((account2 'deposit) difference)))
+
+;; Peterがa1とa2を交換し、
+;; Paul がa1とa3を交換しようとすると, 口座単位でserializeされてても不整合を生じうる。
+;; exchangeの動く全期間にわたってserializeする必要がある。
+
+;; 一つの方法は「両方の口座の直列変換器を使い、全体のexchange手続きを直列化する」こと
+(define (make-account-and-serializer balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+      (begin (set! balance (- balance amount))
+             balance)
+      "Insufficient funds"))
+
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  ;; ここまで同じ
+  (let ((balancer-serializer (make-serializer)))
+    (define (dispatch m)
+      (cond ((eq? m 'withdraw) withdraw)
+            ((eq? m 'deposit) deposit)
+            ((eq? m 'balance) balance)
+            ((eq? m 'serializer) balancer-serializer) ;; new!
+            (else (error "Unknown request -- MAKE-ACCOUNT"
+                         m))))))
+
+;; deposit/withdrawを直列化する。ただし直列化を明示的に管理するのは銀行口座オブジェクトの管理者.
+(define (deposit account amount)
+  (let ((s (account 'serializer))
+        (d (account 'deposit)))
+    ((s d) amount)))
+
+(define (serialized-exchange account1 account2)
+  (let ((serializer1 (account1 'serializer))
+        (serializer2 (account2 'serializer)))
+    ((serializer1 (serializer2 exchange))
+     account1
+     account2)))
+
