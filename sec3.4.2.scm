@@ -79,12 +79,12 @@
     (set! balance (+ balance amount))
     balance)
   ;; ここまで同じ
-  (let ((balancer-serializer (make-serializer)))
+  (let ((balance-serializer (make-serializer)))
     (define (dispatch m)
       (cond ((eq? m 'withdraw) withdraw)
             ((eq? m 'deposit) deposit)
             ((eq? m 'balance) balance)
-            ((eq? m 'serializer) balancer-serializer) ;; new!
+            ((eq? m 'serializer) balance-serializer) ;; new!
             (else (error "Unknown request -- MAKE-ACCOUNT"
                          m))))))
 
@@ -100,4 +100,63 @@
     ((serializer1 (serializer2 exchange))
      account1
      account2)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  直列変換器の実装 -- Implementing serializers      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; 相互排除器(mutex)という同期機構使ってserializerを実装する。
+;; mutexはacquireとreleaseを提供する手続きである。開放されるまで誰も獲得できない。
+(define (make-serializer)
+  (let ((mutex (make-mutex)))
+    (lambda (p)
+      (define (serialized-p . args)
+        (mutex 'acquire)
+        (let ((val (apply p args)))
+          (mutex 'release)
+          val))
+      serialized-p)))
+
+
+(define (make-mutex)
+  (let ((cell (list false)))
+    (define (the-mutex m)
+      (cond ((eq? m 'acquire)
+             (if (test-and-set! cell)
+               (the-mutex 'acquire))) ; retry
+            ((eq? m 'release (clear! cell))))
+      the-mutex)))
+
+(define (clear! cell)
+  (set-car! cell false))
+
+;; cellをtestし、test結果を返しつつもしfalseならtrueにセットしておくような手続き.
+(define (test-and-set! cell)
+  (if (car cell)
+    #t
+    (begin (set-car! cell #t)
+           #f)))
+
+;; test-and-set!の実装は"並列性制御がsystemに登場する本質的な場所である"。
+;; 今まで「serializerを使えば直列が保証される」という前提で話を進めてきたが、それが最終的にtest-and-set!の実装に行き着いたわけである.
+;; serializer > mutex > test-and-set! process
+;; 
+;; falseであることを確かめたら、他のprocessがcellをtestするまえにtrueにsetされることを保証しなければならない。
+;; 完全なtest-and-set!の実装は"システムが並列プロセスを走らせる方法のdetailに依存する", と。
+;; 例えば並列プロセスを「逐次プロセスで、各プロセスを短時間走らせては中断しちょこちょこつまみ食いする」という"時間切片プロセス循環機構"を使っているかもしれない。
+;; こーゆー場合はtest-and-set!はtestと設定の間で時間切片が変わらないようにすることで実装できる。
+;; またマルチプロセスの計算機は、不可分の演算をハードウェアで直接supportする命令を用意している。
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                   デッドロック                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 相手を待ち続けてプログラムが停止する状態。
+;; 回避法のひとつは"各口座に識別番号をつけ、少ない番号の口座が先に入ろうとする"
+;;
+;;  => q3.48.scm で実装
+
+
+
 
