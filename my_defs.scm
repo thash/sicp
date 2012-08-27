@@ -40,3 +40,6 @@
                 ((_ b => a)
                  (test* (quote b) a b))))
 
+(define (puts x)
+  (display x)
+  (newline))
