@@ -19,11 +19,15 @@
 
 ;; display limited items in the given stream.
 (define (display-stream-n s n)
-  (stream-for-each-n display-line s n))
+  (stream-for-each-n display-comma s n))
 
 (define (display-line x)
   (newline)
   (display x))
+
+(define (display-comma x)
+  (display x)
+  (display ", "))
 
 
 ;; utils
