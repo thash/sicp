@@ -1,5 +1,3 @@
-(load "./stream.scm")
-
 (define (stream-map proc . argstreams)
   (if (stream-null? (car argstreams))
     the-empty-stream

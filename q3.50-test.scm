@@ -2,6 +2,7 @@
 (use gauche.test)
 
 (test-start "q3.50")
+(load "./stream")
 (load "./q3.50")
 
 (test-section "stream-map | empty")
