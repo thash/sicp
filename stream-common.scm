@@ -17,6 +17,10 @@
 (define (display-stream s)
   (stream-for-each display-line s))
 
+;; display limited items in the given stream.
+(define (display-stream-n s n)
+  (stream-for-each-n display-line s n))
+
 (define (display-line x)
   (newline)
   (display x))
@@ -28,6 +32,14 @@
     'done
     (begin (proc (stream-car s))
            (stream-for-each proc (stream-cdr s)))))
+
+(define (stream-for-each-n proc s n)
+  (define (iter proc s n i)
+    (if (or (stream-null? s) (= n i))
+      'done
+      (begin (proc (stream-car s))
+             (iter proc (stream-cdr s) n (+ i 1)))))
+  (iter proc s n 1))
 
 ; (define (stream-map proc s)
 ;   (if (stream-null? s)
@@ -66,4 +78,22 @@
                       (stream-filter pred
                                      (stream-cdr stream))))
         (else (stream-filter pred (stream-cdr stream)))))
+
+
+(define (merge s1 s2)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+          (let ((s1car (stream-car s1))
+                (s2car (stream-car s2)))
+            (cond ((< s1car s2car)
+                   (cons-stream s1car (merge (stream-cdr s1) s2)))
+                  ((> s1car s2car)
+                   (cons-stream s2car (merge s1 (stream-cdr s2))))
+                  (else
+                    ;; s1carとs2carが等しいときは1個だけ。
+                    (cons-stream s1car
+                                 (merge (stream-cdr s1)
+                                        (stream-cdr s2)))))))))
+
 
