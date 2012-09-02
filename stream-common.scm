@@ -29,14 +29,13 @@
     (begin (proc (stream-car s))
            (stream-for-each proc (stream-cdr s)))))
 
-;; (define (stream-map proc s)
-;;   (if (stream-null? s)
-;;     the-empty-stream
-;;     (cons-stream (proc (stream-car s))
-;;                  (stream-map proc (stream-cdr s)))))
-
+; (define (stream-map proc s)
+;   (if (stream-null? s)
+;     the-empty-stream
+;     (cons-stream (proc (stream-car s))
+;                  (stream-map proc (stream-cdr s)))))
 ;; ↓
-;; stream-map will be improved in *q3.50.scm
+;; stream-map is improved in *q3.50.scm
 (define (stream-map proc . argstreams)
   (if (stream-null? (car argstreams))
     the-empty-stream

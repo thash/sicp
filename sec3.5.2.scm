@@ -59,6 +59,7 @@
 ;; ここまでのように明示的なstreamの"生成"をする他、暗黙のdelay効果を使う手もある。
 ;; 次のように、再帰っぽくstreamを定義してしまう。
 (define ones (cons-stream 1 ones))
+;; (1 1 1 1 ...) と1だけのstream.
 
 (define (add-streams s1 s2)
   (stream-map + s1 s2))
