@@ -67,7 +67,7 @@
 ;; integersをさっきとは違う方法で定義する。
 ;;   * integersの第2要素は1+[integersの第1要素つまり1] = 2
 ;;   * integersの第3要素は1+[integersの第2要素つまり2] = 3
-(define (integers (cons-stream 1 (add-streams ones integers))))
+(define integers (cons-stream 1 (add-streams ones integers)))
 
 ;; Fibonacciも同じように定義できるよ。
 (define fibs
