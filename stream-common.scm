@@ -20,6 +20,7 @@
 ;; display limited items in the given stream.
 (define (display-stream-n s n)
   (stream-for-each-n display-comma s n))
+  ;;(stream-for-each-n display-line s n))
 
 (define (display-line x)
   (newline)
@@ -61,6 +62,14 @@
              (cons proc (map stream-cdr argstreams))))))
 
 
+;; add, scale (using stream-map)
+(define (scale-stream stream factor)
+  (stream-map (lambda (x) (* x factor)) stream))
+
+(define (add-streams s1 s2)
+  (stream-map + s1 s2))
+
+
 (define (stream-ref s n)
   (if (= n 0)
     (stream-car s)
@@ -99,5 +108,4 @@
                     (cons-stream s1car
                                  (merge (stream-cdr s1)
                                         (stream-cdr s2)))))))))
-
 
