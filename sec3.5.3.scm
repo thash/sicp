@@ -136,4 +136,17 @@
 ;; この発想から、いくつか並び順と要素の網羅性についての問題が続く。
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 信号としてのストリーム
+;;   時間経過に従った連続する信号の値をstreamで表現する。1秒ごとに1,2,3,1,2,3...と繰り替えす信号を表現する場合
+;;   (1 2 3 1 2 3 ...) というリストにするイメージかな。
+
+;; 積分器(integrator) -- dtがstream要素間の時間間隔.
+(define (integral integrand initial-value dt)
+   (define int (cons-stream initial-value
+                            (add-streams (scale-stream integrand dt)
+                                         int)))
+   int)
+
+;; integrand: The quantity being integrated, also called the integral kernel. For example, in  integral f(x) dx, f(x) is the integrand.
 
