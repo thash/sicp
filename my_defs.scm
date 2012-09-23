@@ -30,16 +30,25 @@
 
 ;; removed fast-expt => use default "expt"
 
-(define-syntax eqt
-  (syntax-rules ()
-                ((_ a b)
-                 (test* (quote b) a b))))
+(define (puts x)
+  (display x)
+  (newline))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; test program
+
+(use gauche.test)
 
 (define-syntax eqr
   (syntax-rules ()
                 ((_ b => a)
                  (test* (quote b) a b))))
 
-(define (puts x)
-  (display x)
-  (newline))
+(define (prepare-test)
+ (let ((target (car (last-pair (string-split *program-name* "/")))))
+  (let ((rxobj (rxmatch #/(.*)\./ target)))
+   (let ((filename (regexp-replace #/-test/ (rxobj 1) "")))
+    (load (string-join (list "./" filename) ""))))))
+
+
