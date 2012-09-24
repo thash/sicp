@@ -9,10 +9,13 @@
 ;                    (smooth (stream-cdr stream))))))
 
 (define (smooth stream)
-  (stream-map
-    (lambda (x1 x2) (/ (+ x1 x2) 2))
-    stream
-    (stream-cdr stream)))
+  (if (or (stream-null? stream)
+          (stream-null? (stream-cdr stream)))
+    the-empty-stream
+    (stream-map
+      (lambda (x1 x2) (/ (+ x1 x2) 2))
+      stream
+      (stream-cdr stream))))
 
 ;; q3.74.scm のstream-map版と組み合わせよう.
 (load "./q3.74")
