@@ -142,6 +142,8 @@
 ;;   (1 2 3 1 2 3 ...) というリストにするイメージかな。
 
 ;; 積分器(integrator) -- dtがstream要素間の時間間隔.
+;;
+;; [注] integralはsec3.5.4.scmで再定義されている. 問題3.77.scm以降はそっち利用すること
 (define (integral integrand initial-value dt)
    (define int (cons-stream initial-value
                             (add-streams (scale-stream integrand dt)
