@@ -6,7 +6,7 @@
 ;; "rand-updateを実装する通常のやり方は、a,b,mを適切に選んだ整数とし、mを法としてxをax+bで更新する規則を使うことである。" from p.132 脚注
 (define (rand-update x)
   ;... TODO
-  }
+  )
 
 ;; xをfixed value random-initで初期化し、それを逐一rand-updateしていく手続きとして実装できる。
 (define rand
