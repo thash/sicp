@@ -22,6 +22,9 @@
   (stream-for-each-n display-comma s n))
   ;;(stream-for-each-n display-line s n))
 
+(define (stream-head s n)
+  (display-stream-n s n))
+
 (define (display-line x)
   (newline)
   (display x))

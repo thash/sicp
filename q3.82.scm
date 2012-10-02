@@ -1,29 +1,43 @@
-;; monte-carlo積分 (q3.5.scm)をストリームで実装する.
-(load "./q3.5")
+;; monte-carlo積分 問題3.5(q3.5.scm)をストリームで実装する.
+;; 円の面積をmonte-carlo積分で見積もり, そこからpiを計算する.
 (load "./sec3.5.5")
+
+;; 問題3.5から random-in-range を持ってくる. integer -> real.
+(use srfi-27)
+; (define (random x) (random-integer x))
+(define (random x) (* (random-real) x))
+(define (random-in-range low high)
+  (let ((range (- high low)))
+    (+ low (random range))))
+
 
 (define ones (cons-stream 1 ones))
 (define integers (cons-stream 1 (add-streams ones integers)))
 
-(define random-init 137)
-
-;; estimate-integralを再実装
-(define (estimate-integral p x1 x2 y1 y2)
+;; estimate-integralを再実装.
+;; proc: 引数を2つ取る
+;; ※ x1, x2, y1, y2でrandom-in-rangeを呼ぶのでonesはなんでも良い.
+(define (estimate-integral proc x1 x2 y1 y2)
   (stream-map (lambda (m) (* (- x2 x1) (- y2 y1) m))
-              (monte-carlo (stream-map p
+              (monte-carlo (stream-map proc
                                        (stream-map (lambda (x) (random-in-range x1 x2)) ones)
                                        (stream-map (lambda (x) (random-in-range y1 y2)) ones))
                            0.0 0.0)))
 
-(define (pi-from-monte-carlo-simulation circle-area radius)
-  (display circle-area)
-  (newline)
-  (/ circle-area radius))
-
+;; 座標(x, y)が単位円の中に入るかどうかのテスト. #t/#fを返す
 (define (p-test x y)
-  (<= (+ (square (- x 5)) (square (- y 5))) (square 5)))
+  (<= 1 (+ (* x x) (* y y))))
 
-;(pi-from-monte-carlo-simulation (display-stream-n (estimate-integral p-test 0 10 0 10) 10) (square 5))
-; 100.0, 100.0, 66.66666666666666, 75.0, 80.0, 83.33333333333334, 85.71428571428571, 87.5, 77.77777777777779, done
-(pi-from-monte-carlo-simulation (stream-ref (estimate-integral p-test 0 10 0 10) 100000) (square 5))
-; 79.02120978790212
+
+;; #t/#fストリーム列 s を生成
+(define s (stream-map p-test
+                      (stream-map (lambda (x) (random-in-range -1 1)) ones)
+                      (stream-map (lambda (y) (random-in-range -1 1)) ones)))
+
+(define s2 (monte-carlo s 0 0))
+
+; r * r * PI / (x2 - x1) * (y2 - y1)
+(define pi
+  (stream-map (lambda (p) (* p (* 2 2))) s2))
+
+
