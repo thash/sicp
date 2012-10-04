@@ -30,7 +30,7 @@
     (define dv (scale-stream iL (/ -1 C)))
     (define di (add-streams (scale-stream iL (- (/ R L)))
                             (scale-stream vC (/ 1 L))))
-    (stream-map (lambda (v i) (cons v i)) vC iL)))
+    (stream-map cons vC iL)))
 
 
 (define RLC1 (RLC 1 1 0.2 0.1))
@@ -47,4 +47,9 @@
 ;; (1.8519299999999999 . 3.834181)
 ;; (-0.0651605000000004 . 3.6359559)
 
+; いつか電流がなくなる
+; gosh> (stream-ref s 1000)
+; (4.5996318176662634e-11 . -2.1020456106564936e-11)
+; gosh> (stream-ref s 10000)
+; (3.100746605200312e-111 . -9.616866959231033e-112)
 
