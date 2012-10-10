@@ -383,6 +383,3 @@
                    '<procedure-env>))
     (display object)))
 
-;; TODO: snippet on github (.vim)
-
-
