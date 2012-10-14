@@ -44,7 +44,7 @@
   ;;...
   )
 
-;; コレの親玉であるexpand-clauses は何やってるのか. clause = "節".
+;; コレの親玉であるexpand-clauses はcondの評価にのみ使われている. clause = "節".
 ;; ここでは生true/falseではなくevalされる表現として'true/'falseを返してる.
 (define (expand-and-clauses clauses)
   (if (null? clauses)
