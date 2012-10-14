@@ -323,17 +323,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1.4. 評価器をプログラムとして走らせる
 
-(define (setup-environment)
-  (let ((initial-env
-          (extend-environment (primitive-procedure-names)
-                              (primitive-procedure-objects)
-                              the-empty-environment)))
-    (define-variable! 'true #t initial-env)
-    (define-variable! 'false #f initial-env)
-    initial-env))
-
-(define the-global-environment (setup-environment))
-
 ;; 基本型かどうかは primitive tagが付いているかどうかで判別
 (define (primitive-procedure? proc)
   (tagged-list? proc 'primitive))
@@ -353,6 +342,17 @@
 (define (primitive-procedure-objects)
   (map (lambda (proc) (list 'primitive (cadr proc)))
        primitive-procedures))
+
+(define (setup-environment)
+  (let ((initial-env
+          (extend-environment (primitive-procedure-names)
+                              (primitive-procedure-objects)
+                              the-empty-environment)))
+    (define-variable! 'true #t initial-env)
+    (define-variable! 'false #f initial-env)
+    initial-env))
+
+(define the-global-environment (setup-environment))
 
 ;; 基本手続きを作用させる
 (define (apply-primitive-procedure proc args)
