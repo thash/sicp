@@ -29,6 +29,26 @@
 ;;  評価プロセスはevalとapplyの間の相互作用として記述できる.
 
 
+;; > eval の定義を apply の定義よりも先に行っていたために、eval の定義の中で使っていた apply 手続きが Gauche のシステムの apply 手続きを利用していたために動作しなかったらしい。 (ref: http://www.serendip.ws/archives/1817)
+;; という情報があったためapplyを上に持ってきた.
+
+;; apply
+;;   applyは引数として"手続き"と, "手続きを作用させる引数のリスト"を取る.
+
+(define (apply procedure arguments)
+  (cond ((primitive-procedure? procedure)
+         (apply-primitive-procedure procedure arguments))
+        ((compound-procedure? procedure)
+         (eval-sequence
+           (procedure-body procedure)
+           (extend-environment
+             (procedure-parameters procedure)
+             arguments
+             (procedure-environment procedure))))
+        (else
+          (error
+            "Unknown procedure type -- APPLY" procedure))))
+
 ;;  eval
 ;;    evalは引数として"式"と"環境"をとる. 式を分類して評価を振り分ける.
 ;;    evalの中身は式に応じた場合分けの形を取る.
@@ -53,23 +73,6 @@
         (else
           (error "Unknown expression type -- EVAL" exp))))
 
-
-;; apply
-;;   applyは引数として"手続き"と, "手続きを作用させる引数のリスト"を取る.
-
-(define (apply procedure arguments)
-  (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
-        ((compound-procedure? procedure)
-         (eval-sequence
-           (procedure-body procedure)
-           (extend-environment
-             (procedure-parameters procedure)
-             arguments
-             (procedure-environment procedure))))
-        (else
-          (error
-            "Unknown procedure type -- APPLY" procedure))))
 
 
 ;; list-of-values
