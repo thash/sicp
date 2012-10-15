@@ -64,3 +64,12 @@
 (define (or->if exp)
   (expand-or-clauses (cdr exp)))
 
+
+;; テストのやり方
+;    (eval '(and true true) the-global-environment)
+;    (eval '(and true false true) the-global-environment)
+;    (eval '(and true 1) the-global-environment)
+;    (eval '(and 1 true) the-global-environment)
+;    (eval '(and) the-global-environment)
+
+

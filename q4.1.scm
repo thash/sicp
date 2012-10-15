@@ -43,3 +43,10 @@
 
 ;; 参考にする -> http://sicp.g.hatena.ne.jp/yad-EL/20080305/1204703488
 
+(define the-global-environment (setup-environment))
+
+(list-of-values
+  '((begin (set! (+ x 3)) (newline) (display x))
+    (begin (set! (+ x 2)) (newline) (display x))))
+
+

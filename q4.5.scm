@@ -25,4 +25,10 @@
     (list (caddr clause) (car clause))
     (cdr clause)))
 
+;; 女の
+;; 副作用のある式が<o>
+;; 二階評価させないためにmake-lambdaでかぶせて環境を与えてその中で評価させる.
+
+
+
 

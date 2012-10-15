@@ -12,10 +12,13 @@
 ;;        -- 多値 ... 式は唯一ではなく, 多くの値が取れるようになる.
 ;;   4.4. 論理型プログラミング(logic programming)
 ;;        -- "関係を使って知識を表現する(knowledge is expressed in terms of relations)"
+;;            Prologのような?
 ;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1. 超循環評価器(The Metacircular Evaluator)
+;;
+;;  評価する言語と同じ言語で書かれた評価器を超循環評価器という
 ;;
 ;;  > 合成手続きを一組の引数に作用させるには, 手続き本体を新しい環境で評価する.
 ;;  > この環境を構成するには, 手続きオブジェクトの環境部分を, 手続きの各パラメタが, 手続きを作用させる引数に束縛されるフレームで拡張する.
@@ -151,6 +154,8 @@
 (define (definition? exp)
   (tagged-list? exp 'define))
 
+;; set! に相当する手続きで使われてるぽい.
+;; (proc arg1...)という形式があるdefineとは異なり第一引数が必ずsymbolである.
 (define (definition-variable exp)
   (if (symbol? (cadr exp))
     (cadr exp)
@@ -196,7 +201,7 @@
 
 (define (make-begin seq) (cons 'begin seq))
 
-
+;; pairだったらなんでもapplication. この定義はq4.2.scmで突っ込まれる.
 (define (application? exp) (pair? exp))
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
@@ -215,6 +220,7 @@
 (define (cond->if exp)
   (expand-clauses (cond-clauses exp)))
 
+;; condをifの入れ子として評価する.
 (define (expand-clauses clauses)
   (if (null? clauses)
     'false
@@ -331,6 +337,7 @@
   (tagged-list? proc 'primitive))
 (define (primitive-implementation proc) (cadr proc))
 
+;; これは本文の進行に応じて増やしていく.
 (define primitive-procedures
   (list (list 'car car)
         (list 'cdr cdr)
