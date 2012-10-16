@@ -242,6 +242,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1.3. 評価器のデータ構造
+;;   環境や手続き, true/falseの表現など
+;;   評価器が内部的に使うデータ構造を定義する.
 
 ;; 評価器のtrue/false
 (define (true? x)
@@ -266,10 +268,11 @@
 
 ;; 環境に対する操作
 ;;   評価器は環境を操作する演算を必要とする. 環境はフレームの並びであり, 各フレームは変数を対応する値に対応付ける束縛の表である.
+;;   他の方法で環境を表現することもできる => q4.11.scm
 
 (define (enclosing-environment env) (cdr env))
 (define (first-frame env) (car env))
-(define the-empty-environment '())
+(define the-empty-environment '()) ;; 空の環境はただの空リスト
 
 (define (make-frame variables values)
   (cons variables values))
@@ -287,7 +290,7 @@
       (error "Too many arguments supplied" vars vals)
       (error "Too few arguments supplied" vars vals))))
 
-;; 環境envの中で記号varに束縛された値を返す
+;; 環境envの中で記号varに束縛された値を返す. 中から外へ探す.
 (define (lookup-variable-value var env)
   (define (env-loop env)
     (define (scan vars vals)
@@ -303,6 +306,7 @@
               (frame-values frame)))))
   (env-loop env))
 
+;; lookupするだけでなく見つかったら代入する. 走査処理を一般化できそう.
 (define  (set-variable-value! var val env)
   (define (env-loop env)
     (define (scan vars vals)
