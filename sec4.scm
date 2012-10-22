@@ -409,3 +409,15 @@
 ;    (eval '(* 5 5) user-initial-environment)
 ;    (eval (cons '* (list 5 5)) user-initial-environment)
 
+;; => q4.15.scm
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 4.1.6. 内部定義
+;;
+;;  define内でさらにdefineする内部定義については,
+
+;; 以下の2式はどちらも同じ結果(25)を返す.
+;    (eval '(* 5 5) user-initial-environment)
+;    (eval (cons '* (list 5 5)) user-initial-environment)
+
