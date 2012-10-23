@@ -63,6 +63,7 @@
         ((assignment? exp) (eval-assignment exp env))
         ((definition? exp) (eval-definition exp env))
         ((if? exp) (eval-if exp env))
+        ((let? exp) (eval (let->combination exp) env))
         ((lambda? exp)
          (make-procedure (lambda-parameters exp)
                          (lambda-body exp)
@@ -333,6 +334,32 @@
     (scan (frame-variables frame)
           (frame-values frame))))
 
+;; let (q4.6.scm) {{{
+
+(define (let? exp) (tagged-list? exp 'let))
+(define (let-assignment exp) (cadr exp))
+(define (let-body exp) (cddr exp))
+
+(define (let-exp assignment)
+  (if (null? assignment)
+    '()
+    (cons (cadr (car assignment))
+          (let-exp (cdr assignment)))))
+
+(define (let-var assignment)
+  (if (null? assignment)
+    '()
+    (cons (car (car assignment))
+          (let-var (cdr assignment)))))
+
+(define (transform-let assignment body)
+  (cons (make-lambda (let-var assignment) body)
+        (let-exp assignment)))
+
+(define (let->combination exp)
+  (transform-let (let-assignment exp) (let-body exp)))
+;; }}} let -- from q4.6.scm
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1.4. 評価器をプログラムとして走らせる
 
@@ -415,7 +442,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1.6. 内部定義
 ;;
-;;  define内でさらにdefineする内部定義については,
+;;  define内でさらにdefineする内部定義
+;    (define (f x)
+;      (define (even? n)
+;        (if (= n 0)
+;          #t
+;          (odd? (- n 1))))
+;      (define (odd? n)
+;        (if (= n 0)
+;          #f
+;          (even? (- n 1))))
+;          ;....)
+;
+;; 逐次定義と同時定義の扱いは処理系によって違う.
+;; "内部で定義した名前が真に同時有効範囲を持つように定義を扱う"
+;;   => lambda式による構文変換
+(lambda <vars>
+  (define u <e1>)
+  (define v <e2>)
+  <e3>)
+;; この手続きは, 以下のように書き換えられる.
+(lambda <vars>
+  (let ((u '*unassigned*)
+        (v '*unassigned*))
+    (set! u <e1>)
+    (set! v <e2>)
+    <e3>))
+;; 最初に*unassigned*で定義してしまい, その後setする流れ. 同時定義とみなせる(?).
+
+;; => q4.16.scm, q4.17.scm, q4.18.scm
 
 ;; 以下の2式はどちらも同じ結果(25)を返す.
 ;    (eval '(* 5 5) user-initial-environment)
