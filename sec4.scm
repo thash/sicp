@@ -130,6 +130,7 @@
 ;;     * 手続き作用は上記のいずれにも合致しない任意の合成式
 ;;   淡々と書いていくよ
 
+;; 自己評価式は数と文字列だけ(数やら文字列とは, という定義はunderlyingなschemeに任せてる)
 (define (self-evaluating? exp)
   (cond ((number? exp) #t)
         ((string? exp) #t)
@@ -144,14 +145,14 @@
     (eq? (car exp) tag)
     #f))
 
-
+;; 代入
 (define (assignment? exp)
   (tagged-list? exp 'set!))
 
 (define (assignment-variable exp) (cadr exp))
 (define (assignment-value exp) (caddr exp))
 
-
+;; 定義
 (define (definition? exp)
   (tagged-list? exp 'define))
 
@@ -168,14 +169,14 @@
     (make-lambda (cdadr exp)
                  (cddr exp))))
 
-
+;; lambda
 (define (lambda? exp) (tagged-list? exp 'lambda))
 (define (lambda-parameters exp) (cadr exp))
 (define (lambda-body exp) (cddr exp))
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
-
+;; if
 (define (if? exp) (tagged-list? exp 'if))
 (define (if-predicate exp) (cadr exp))
 (define (if-consequent exp) (caddr exp))
@@ -183,12 +184,12 @@
 (define (if-alternative exp)
   (if (not (null? (cdddr exp)))
     (cadddr exp)
-    '#f))
+    '#f)) ;; NOTE: ここは本文では'false
 
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative))
 
-
+;; begin
 (define (begin? exp) (tagged-list? exp 'begin))
 (define (begin-actions exp) (cdr exp))
 (define (last-exp? seq) (null? (cdr seq)))
@@ -202,7 +203,7 @@
 
 (define (make-begin seq) (cons 'begin seq))
 
-;; pairだったらなんでもapplication. この定義はq4.2.scmで突っ込まれる.
+;; pairだったらなんでもapplicationなので順序に注意. この定義はq4.2.scmで突っ込まれる.
 (define (application? exp) (pair? exp))
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
@@ -210,7 +211,7 @@
 (define (first-operand ops) (car ops))
 (define (rest-operands ops) (cdr ops))
 
-
+;; "導出された式(derived expression)"の一例, cond.
 (define (cond? exp) (tagged-list? exp 'cond))
 (define (cond-clauses exp) (cdr exp))
 (define (cond-else-clause? clause)
@@ -224,7 +225,7 @@
 ;; condをifの入れ子として評価する.
 (define (expand-clauses clauses)
   (if (null? clauses)
-    'false
+    'false ;; NOTE: ここは本文中で'false.
     (let ((first (car clauses))
           (rest (cdr clauses)))
       (if (cond-else-clause? first)
