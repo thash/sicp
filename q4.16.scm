@@ -20,8 +20,37 @@
               (frame-values frame)))))
   (env-loop env))
 
+
+;; (b). 手続き本体を取り, 変換を行うことで内部定義のない等価なものを返す手続きscan-out-definesを書け.
 ;; 内部定義(二重define)をletに展開する処理をひとつの手続きにしてしまう.
 ;; マクロじゃだめですか.
-(define (scan-out-defines p)
-  ())
+;; http://sicp-study.g.hatena.ne.jp/papamitra/20070715/sicp_4_16
+(define (scan-out-defines body)
+  (define (iter exp)
+    (if (null? exp)
+      (list '())
+      (let ((ret (iter (cdr exp)))
+        (clause (car exp)))
+      (if (definition? clause)
+        (cons (cons
+                (list (definition-variable clause) ''*unassigned*)
+                (car ret))
+              (cons
+                (list 'set! (definition-variable clause) (definition-value clause))
+                (cdr ret)))
+        (cons (car ret) (cons clause (cdr ret)))))))
+  (define (include-define? exps)
+    (if (null? exps)
+      #f
+      (if (definition? (car exps))
+        #t
+        (include-define? (cdr exps)))))
+  (if (include-define? body)
+    (list (cons 'let (iter body)))
+    body))
+
+
+;; (c). scan-out-defines を make-procedureかprocedure-body(4.1.3)に組み込む. どちらが優れているか.
+;; procedure-bodyに入れると2回呼ばれるがmake-procedureだと1回なので効率的.
+
 
