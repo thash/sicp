@@ -28,19 +28,17 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 4.1.1. 評価器の中核
-;;
-;;  評価プロセスはevalとapplyの間の相互作用として記述できる.
-
-
-;; > eval の定義を apply の定義よりも先に行っていたために、eval の定義の中で使っていた apply 手続きが Gauche のシステムの apply 手続きを利用していたために動作しなかったらしい。 (ref: http://www.serendip.ws/archives/1817)
-;; という情報があったためapplyを上に持ってきた.
-
-;; apply
-;;   applyは引数として"手続き"と, "手続きを作用させる引数のリスト"を取る.
 
 ;; Gaucheのtrue/falseが後々混乱を呼ぶので最初に定義.
 (define true #t)
 (define false #f)
+
+;;  評価プロセスはevalとapplyの間の相互作用として記述できる.
+
+;; apply
+;;   applyは引数として"手続き"と, "手続きを作用させる引数のリスト"を取る.
+;;   > eval の定義を apply の定義よりも先に行っていたために、eval の定義の中で使っていた apply 手続きが Gauche のシステムの apply 手続きを利用していたために動作しなかったらしい。 (ref: http://www.serendip.ws/archives/1817)
+;;   という情報があったためapplyを上に持ってきた.
 
 ;; primitive proceduresを評価するとき素applyが欲しいので残しとく(p.227 脚注17参考).
 (define apply-in-underlying-scheme apply)
