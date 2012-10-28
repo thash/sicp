@@ -1,6 +1,9 @@
-;; これとかどうだろう
-;; (define true #t)
-;; (define false #f)
+
+;; いろいろ混乱を呼びそうなので最初に定義.
+(define true #t)
+(define false #f)
+
+(define apply-in-underlying-scheme apply)
 
 (define (apply procedure arguments)
   (cond ((primitive-procedure? procedure)
@@ -124,7 +127,7 @@
 (define (if-alternative exp)
   (if (not (null? (cdddr exp)))
     (cadddr exp)
-    '#f)) ;; NOTE: ここは本文では'false
+    'false)) ;; NOTE: ここは本文では'false => 本文に合わせる
 
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative))
@@ -180,6 +183,169 @@
                  (expand-clauses rest))))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 4.1.3. 評価器のデータ構造
+;; NOTE: #t/#fは本文中ではtrue/false => 本文中の表記に合わせる
+(define (true? x)
+  (not (eq? x false)))
+(define (false? x)
+  (eq? x false))
+
+(define (make-procedure parameters body env)
+  (list 'procedure parameters body env))
+
+(define (compound-procedure? p)
+  (tagged-list? p 'procedure))
+
+(define (procedure-parameters p) (cadr p))
+(define (procedure-body p) (caddr p))
+(define (procedure-environment p) (cadddr p))
 
 
+(define (enclosing-environment env) (cdr env))
+(define (first-frame env) (car env))
+(define the-empty-environment '())
+
+(define (make-frame variables values)
+  (cons variables values))
+(define (frame-variables frame) (car frame))
+(define (frame-values frame) (cdr frame))
+(define (add-binding-to-frame! var val frame)
+  (set-car! frame (cons var (car frame)))
+  (set-cdr! frame (cons val (cdr frame))))
+
+
+;; 外側の環境をbase-envとし, variablesがvaluesに束縛された新しいフレームからなる環境を返す.
+(define (extend-environment vars vals base-env)
+  (if (= (length vars) (length vals))
+    (cons (make-frame vars vals) base-env)
+    (if (< (length vars) (length vals))
+      (error "Too many arguments supplied" vars vals)
+      (error "Too few arguments supplied" vars vals))))
+
+;; 環境envの中で記号varに束縛された値を返す. 中から外へ探す.
+(define (lookup-variable-value var env)
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (car vals))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+      (error "Unbound variable" var)
+      (let ((frame (first-frame env)))
+        (scan (frame-variables frame)
+              (frame-values frame)))))
+  (env-loop env))
+
+;; lookupするだけでなく見つかったら代入する. 走査処理を一般化できそう.
+(define  (set-variable-value! var val env)
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (set-car! vals val))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+      (error "Unbound variable -- SET!" var)
+      (let ((frame (first-frame env)))
+        (scan (frame-variables frame)
+              (frame-values frame)))))
+  (env-loop env))
+
+(define (define-variable! var val env)
+  (let ((frame (first-frame env)))
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (add-binding-to-frame! var val frame))
+            ((eq? var (car vars))
+             (set-car! vals val))
+            (else (scan (cdr vars) (cdr vals)))))
+    (scan (frame-variables frame)
+          (frame-values frame))))
+
+
+(define (primitive-procedure? proc)
+  (tagged-list? proc 'primitive))
+(define (primitive-implementation proc) (cadr proc))
+
+
+;; これは本文の進行に応じて増やしていく.
+(define primitive-procedures
+  (list (list 'car car)
+        (list 'cdr cdr)
+        (list 'cons cons)
+        (list 'null? null?)
+        ;; ....
+        ))
+
+(define (primitive-procedure-names)
+  (map car
+       primitive-procedures))
+(define (primitive-procedure-objects)
+  (map (lambda (proc) (list 'primitive (cadr proc)))
+       primitive-procedures))
+
+
+;; 本文中の順序とは異なるが,
+;; setup-environmentはprimitive-procedure-* の後に置かないと未定義エラーが出る
+;; NOTE: 本文は#t/#fがtrue/false. => 本文表記に合わせる
+(define (setup-environment)
+  (let ((initial-env
+          (extend-environment (primitive-procedure-names)
+                              (primitive-procedure-objects)
+                              the-empty-environment)))
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
+    initial-env))
+
+(define the-global-environment (setup-environment))
+
+
+;; 基盤手続きの作用でunderlying applyを明示的に使いたくなる.
+;; 最初のapply定義に戻って保存しておく.
+
+(define (apply-primitive-procedure proc args)
+  (apply-in-underlying-scheme
+    (primitive-implementation proc) args))
+
+
+;; REPL
+(define input-prompt ">> M-Eval input:")
+(define output-prompt ">> M-Eval value:")
+
+;; usage: the-global-environmentを定義(このファイル中定義済),
+;; その後(driver-loop)を起動
+(define (driver-loop)
+  (prompt-for-input input-prompt)
+  (let ((input (read)))
+    (let ((output (eval input the-global-environment)))
+      (annouce-output output-prompt)
+      (user-print output)))
+  (driver-loop))
+
+(define (prompt-for-input string)
+  (newline) (newline) (display string) (newline))
+(define (annouce-output string)
+  (newline) (display string) (newline))
+(define (user-print object)
+  (if (compound-procedure? object)
+    (display (list 'compound-procedure
+                   (procedure-parameters object)
+                   (procedure-body object)
+                   '<procedure-env>))
+    (display object)))
+
+
+
+;; test
+; (define (append x y)
+;   (if (null? x)
+;     y
+;     (cons (car x)
+;           (append (cdr x) y))))
+;
+; (append '(a b c ) '(d e f))
 
