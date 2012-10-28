@@ -38,6 +38,13 @@
 ;; apply
 ;;   applyは引数として"手続き"と, "手続きを作用させる引数のリスト"を取る.
 
+;; Gaucheのtrue/falseが後々混乱を呼ぶので最初に定義.
+(define true #t)
+(define false #f)
+
+;; primitive proceduresを評価するとき素applyが欲しいので残しとく(p.227 脚注17参考).
+(define apply-in-underlying-scheme apply)
+
 (define (apply procedure arguments)
   (cond ((primitive-procedure? procedure)
          (apply-primitive-procedure procedure arguments))
@@ -132,9 +139,9 @@
 
 ;; 自己評価式は数と文字列だけ(数やら文字列とは, という定義はunderlyingなschemeに任せてる)
 (define (self-evaluating? exp)
-  (cond ((number? exp) #t)
-        ((string? exp) #t)
-        (else #f)))
+  (cond ((number? exp) true)
+        ((string? exp) true)
+        (else false)))
 
 (define (variable? exp) (symbol? exp))
 (define (quoted? exp) (tagged-list? exp 'quote))
@@ -143,7 +150,7 @@
 (define (tagged-list? exp tag)
   (if (pair? exp)
     (eq? (car exp) tag)
-    #f))
+    false))
 
 ;; 代入
 (define (assignment? exp)
@@ -184,7 +191,7 @@
 (define (if-alternative exp)
   (if (not (null? (cdddr exp)))
     (cadddr exp)
-    '#f)) ;; NOTE: ここは本文では'false
+    'false))
 
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative))
@@ -225,7 +232,7 @@
 ;; condをifの入れ子として評価する.
 (define (expand-clauses clauses)
   (if (null? clauses)
-    'false ;; NOTE: ここは本文中で'false.
+    'false
     (let ((first (car clauses))
           (rest (cdr clauses)))
       (if (cond-else-clause? first)
@@ -249,9 +256,9 @@
 
 ;; 評価器のtrue/false
 (define (true? x)
-  (not (eq? x #f)))
+  (not (eq? x false)))
 (define (false? x)
-  (eq? x #f))
+  (eq? x false))
 
 ;; 基本手続きを扱う以下の手続きが使えるとする.
 ;;     (apply-primitive-procedure <proc> <args>)
@@ -272,7 +279,7 @@
 ;;   評価器は環境を操作する演算を必要とする. 環境はフレームの並びであり, 各フレームは変数を対応する値に対応付ける束縛の表である.
 ;;   他の方法で環境を表現することもできる => q4.11.scm
 
-(define (enclosing-environment env) (cdr env))
+(define (enclosing-environment env) (cdr env)) ;; 環境を"狭める" => ただのcdr
 (define (first-frame env) (car env))
 (define the-empty-environment '()) ;; 空の環境はただの空リスト
 
@@ -386,13 +393,15 @@
   (map (lambda (proc) (list 'primitive (cadr proc)))
        primitive-procedures))
 
+;; 本文中の順序とは異なるが,
+;; setup-environmentはprimitive-procedure-* の後に置かないと未定義エラーが出る
 (define (setup-environment)
   (let ((initial-env
           (extend-environment (primitive-procedure-names)
                               (primitive-procedure-objects)
                               the-empty-environment)))
-    (define-variable! 'true #t initial-env)
-    (define-variable! 'false #f initial-env)
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
     initial-env))
 
 (define the-global-environment (setup-environment))
@@ -458,17 +467,17 @@
 ;; 逐次定義と同時定義の扱いは処理系によって違う.
 ;; "内部で定義した名前が真に同時有効範囲を持つように定義を扱う"
 ;;   => lambda式による構文変換
-(lambda <vars>
-  (define u <e1>)
-  (define v <e2>)
-  <e3>)
+;    (lambda <vars>
+;      (define u <e1>)
+;      (define v <e2>)
+;      <e3>)
 ;; この手続きは, 以下のように書き換えられる.
-(lambda <vars>
-  (let ((u '*unassigned*)
-        (v '*unassigned*))
-    (set! u <e1>)
-    (set! v <e2>)
-    <e3>))
+;    (lambda <vars>
+;      (let ((u '*unassigned*)
+;            (v '*unassigned*))
+;        (set! u <e1>)
+;        (set! v <e2>)
+;        <e3>))
 ;; 最初に*unassigned*で定義してしまい, その後setする流れ. 同時定義とみなせる(?).
 
 ;; => q4.16.scm, q4.17.scm, q4.18.scm
