@@ -64,3 +64,26 @@
 
 ;; これだとエラーになるそうな
 
+;; たとえばfactを考えよう. defineして実行.
+;; 周りのlambdaは即時実行させたいだけだから気にしない.
+((lambda (x)
+   (define (fact n)
+     (if (= n 1)
+       1
+       (* n (fact (- n 1)))))
+(fact x)) 5)
+;; => 120 ... ok.
+
+;; Louis「defineはletで置き換えられる！」
+;; いいぜ まずはそのふざけた幻想をぶち壊す
+((lambda (x)
+  (let ((fact (lambda (n)
+                (if (= n 1)
+                  1
+                  (* n (fact (- n 1))))))))
+  (fact x)) 5)
+;; =>  !!!*** ERROR: unbound variable: fact!!!
+
+;; 何となれば, 最初にfactを定義しようとしているのに再帰的にfactを参照しているから.
+;; つーかむしろdefineが再帰的定義できるのは何なんだ
+
