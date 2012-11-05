@@ -381,6 +381,9 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list '+ +)
+        (list '* *)
+        (list '/ /)
         ;; (list 'map map)  ;; q4.14.scm でLousがここにmapを加えようとするが, 加えると動かない, らしい(再現できず)
         ;; ....
         ))
