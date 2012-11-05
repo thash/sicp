@@ -693,3 +693,40 @@
 ; 1
 
 
+;;; thunk ;;;
+;; これはmemo化されていないforce-it version.1である.
+(define (force-it obj)
+  (if (thunk? obj)
+    (actual-value (thunk-exp obj) (thunk-env obj))
+    obj))
+
+(define (thunk-exp thunk) (cadr thunk))
+(define (thunk-env thunk) (caddr thunk))
+
+;; delayしてthunkを作るのは, なんという事はない単なるtag付きのlistである.
+(define (thunk? obj) (tagged-list? obj 'thunk))
+(define (delay-it exp env)
+  (list 'thunk exp env))
+
+;;; メモ化 ;;;
+;; アホみたいにまんまのtagをつける. tagが thunk -> evaluated-thunkに変わる.
+;; evaluated-thunk tagがついてたら評価済だからもっかいforceする必要はないということ.
+(define (evaluated-thunk? obj)
+  (tagged-list? obj 'evaluated-thunk))
+
+(define (thunk-value evaluated-thunk) (cadr evaluated-thunk))
+
+;; memo化ありのversion.2
+(define (force-it obj)
+  (cond ((thunk? obj)
+         (let ((result (actual-value
+                         (thunk-exp obj)
+                         (thunk-env obj))))
+           (set-car! obj 'evaluated-thunk) ;; tagのつけかえ
+           (set-car! (cdr obj) result)     ;; 本体expをactual-value結果で置き換える
+           (set-cdr! (cdr obj) '())        ;; 不要なenvをカラにする(メモリ節約)
+           result))
+        ((evaluated-thunk? obj)
+         (thunk-value obj))
+        (else obj)))
+
