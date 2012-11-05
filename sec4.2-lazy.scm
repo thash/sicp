@@ -43,15 +43,22 @@
 ;; primitive proceduresを評価するとき素applyが欲しいので残しとく(p.227 脚注17参考).
 (define apply-in-underlying-scheme apply)
 
-(define (apply procedure arguments)
+;; evalはapplyに, 評価されていない被演算子の式argumentsを渡している.
+;; envを受け取るようにしつつ, argumentsの扱いに気をつけなければならない.
+;;   * primitive-procedureを作用させるときはlist-of-arg-values
+;;   * extend-environmentの時はdelayed-objectのargsを渡す
+;; ちなみにprocedureはactual-valueでforceされているので評価済.
+(define (apply procedure arguments env)
   (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
+         (apply-primitive-procedure
+           procedure
+           (list-of-arg-values arguments env)))
         ((compound-procedure? procedure)
          (eval-sequence
            (procedure-body procedure)
            (extend-environment
              (procedure-parameters procedure)
-             arguments
+             (list-of-delayed-args arguments env)
              (procedure-environment procedure))))
         (else
           (error
@@ -78,8 +85,9 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
-         (apply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
+         (apply (actual-value (operator exp) env)
+                (operands exp)
+                env))
         (else
           (error "Unknown expression type -- EVAL" exp))))
 
@@ -93,8 +101,10 @@
           (list-of-values (rest-operands exps) env))))
 
 ;; eval-if
+;; 遅延世界ではif述語部分のみ, evalの代わりにactual-valueを使う.
+;; 他のふたつ(true/falseそれぞれの時の本体)はevalで良い.
 (define (eval-if exp env)
-  (if (true? (eval (if-predicate exp) env))
+  (if (true? (actual-value (if-predicate exp) env))
     (eval (if-consequent exp) env)
     (eval (if-alternative exp) env)))
 
@@ -411,13 +421,13 @@
     (primitive-implementation proc) args))
 
 ;; loop
-(define input-prompt ";;; M-Eval input:")
-(define output-prompt ";;; M-Eval value")
+(define input-prompt ";;; L-Eval input:")
+(define output-prompt ";;; L-Eval value")
 
 (define (driver-loop)
   (prompt-for-input input-prompt)
   (let ((input (read)))
-    (let ((output (eval input the-global-environment)))
+    (let ((output (actual-value input the-global-environment)))
       (annouce-output output-prompt)
       (user-print output)))
   (driver-loop))
@@ -646,5 +656,40 @@
 ;; 純粋正規順序の言語   -> すべての合成手続きがすべての引数でnon-strict
 
 ;; => q4.25.scm, q4.26.scm
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 4.2.2. 遅延評価の解釈系
+;;   遅延引数はthunk(サンク)というオブジェクトに変換する.
+;;   thunkは必要とされた時, 作用の時に評価されていたかのように引数の値を生じる.
+
+;; (1). evalを書き換える.  => line.81-
+;; (2). actual-value
+(define (actual-value exp env)
+  (force-it (eval exp env)))
+
+;; (3). applyを書き換える. => line.46-
+;; (4). list-of-arg-values, list-of-delayed-args. (apply中で使われる)
+(define (list-of-arg-values exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (actual-value (first-operand exps) env)
+          (list-of-arg-values (rest-operands exps)
+                              env))))
+
+(define (list-of-delayed-args exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (delay-it (first-operand exps) env)
+          (list-of-delayed-args (rest-operands exps)
+                                env))))
+
+;; (5). eval-ifを書き換える
+
+;; (1)-(5)までやればいちおうtryが動く(この使い方だとforce-itはまだ出てこない).
+; gosh> (define (try a b)
+;         (if (= a 0) 1 b))
+; gosh> (try 0 (/ 1 0))
+; 1
 
 
