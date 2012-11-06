@@ -394,6 +394,8 @@
         (list '+ +)
         (list '* *)
         (list '/ /)
+        (list 'display display)
+        (list 'newline newline)
         ;; (list 'map map)  ;; q4.14.scm でLousがここにmapを加えようとするが, 加えると動かない, らしい(再現できず)
         ;; ....
         ))
