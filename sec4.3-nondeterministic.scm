@@ -416,16 +416,37 @@
     (primitive-implementation proc) args))
 
 ;; loop
-(define input-prompt ";;; M-Eval input:")
-(define output-prompt ";;; M-Eval value")
+(define input-prompt ";;; Amb-Eval input:")
+(define output-prompt ";;; Amb-Eval value")
 
 (define (driver-loop)
-  (prompt-for-input input-prompt)
-  (let ((input (read)))
-    (let ((output (eval input the-global-environment)))
-      (annouce-output output-prompt)
-      (user-print output)))
-  (driver-loop))
+  (define (internal-loop try-again)
+    (prompt-for-input input-prompt)
+    (let ((input (read)))
+      (if (eq? input 'try-again)
+        (try-again)
+        (begin
+          (newline)
+          (display ";;; Starting a new problem ")
+          (ambeval input
+                   the-global-environment
+                   ;; ambeval 成功
+                   (lambda (val next-alternative)
+                     (annouce-output output-prompt)
+                     (user-print val)
+                     (internal-loop next-alternative))
+                   ;; ambeval 失敗
+                   (lambda ()
+                     (annouce-output
+                       ";;; There are no more values of")
+                     (user-print input)
+                     (driver-loop)))))))
+  (internal-loop
+    (lambda ()
+      (newline)
+      (display ";;; There is no current problem")
+      (driver-loop))))
+
 
 (define (prompt-for-input string)
   (newline) (newline) (display string) (newline))
@@ -517,6 +538,7 @@
         ((lambda? exp) (analyze-lambda exp))
         ((begin? exp) (analyze-sequence (begin-actions exp)))
         ((cond? exp) (analyze (cond->if exp)))
+        ((amb? exp) (analyze-amb exp))
         ((application? exp) (analyze-application exp))
         (else
           (error "Unknown expression type -- ANALYZE" exp))))
@@ -536,51 +558,81 @@
 
 ;; 環境引数を無視して式を実行
 (define (analyze-self-evaluating exp)
-  (lambda (env) exp))
+  (lambda (env succeed fail)
+    (succeed exp fail)))
 
 (define (analyze-quoted exp)
   (let ((qval (text-of-quotation exp)))
-    (lambda (env) qval)))
+    (lambda (env succeed fail)
+      (succeed qval fail))))
 
 ;; 変数探索は実行フェイズに行わなければならない.
 (define (analyze-variable exp)
-  (lambda (env) (lookup-variable-value exp env)))
+  (lambda (env succeed fail)
+    (succeed (lookup-variable-value exp env)
+             fail)))
 
 ;; assignmentとdefinitionは1度だけ解析すれば良い.
 (define (analyze-assignment exp)
   (let ((var (assignment-variable exp))
         (vproc (analyze (assignment-value exp))))
-    (lambda (env)
-      (set-variable-value! var (vproc env) env)
-      'ok)))
+    (lambda (env succeed fail)
+      (vproc env
+             (lambda (val fail2) ; *1*
+               (let ((old-value
+                       (lookup-variable-value var env)))
+                 (set-variable-value! var val env)
+                 (succeed 'ok
+                          (lambda () ; *2*
+                            (set-variable-value! var
+                                                 old-value
+                                                 env)
+                            (fail2)))))
+             fail))))
 
 (define (analyze-definition exp)
   (let ((var (definition-variable exp))
         (vproc (analyze (definition-value exp))))
-    (lambda (env)
-      (define-variable! var (vproc env) env)
-      'ok)))
+    (lambda (env succeed fail)
+      (vproc env
+             (lambda (val fail2)
+               (define-variable! var val env)
+               (succeed 'ok fail2))
+             fail))))
 
 ;; if は解析時に条件文, trueの時, elseの時の内容を解析しておいて実行時に分岐
 (define (analyze-if exp)
   (let ((pproc (analyze (if-predicate exp)))
         (cproc (analyze (if-consequent exp)))
         (aproc (analyze (if-alternative exp))))
-    (lambda (env)
-      (if (true? (pproc env))
-        (cproc env)
-        (aproc env)))))
+    (lambda (env succeed fail)
+      (pproc env
+             ;; pred-valueを得るための述語評価の成功継続
+             (lambda (pred-value fail2)
+               (if (true? pred-value)
+                 (cproc env succeed fail2)
+                 (aproc env succeed fail2)))
+             ;; 述語評価の失敗継続
+             fail))))
 
 (define (analyze-lambda exp)
   (let ((vars (lambda-parameters exp))
         (bproc (analyze-sequence (lambda-body exp))))
-    (lambda (env) (make-procedure vars bproc env))))
+    (lambda (env succeed fail)
+      (succeed (make-procedure vars bproc env)
+               fail))))
 
 ;; expではなくexps.
 ;; そもそもlambdaは2個の式を実行できるようになってるの?
 (define (analyze-sequence exps)
-  (define (sequentially proc1 proc2)
-    (lambda (env) (proc1 env) (proc2 env)))
+  (define (sequentially a b)
+    (lambda (env succeed fail)
+      (a env
+         ;; aを呼び出す時の成功継続
+         (lambda (a-value fail2)
+           (b env succeed fail2))
+         ;; bを呼び出す時の失敗継続
+         fail)))
   (define (loop first-proc rest-procs)
     (if (null? rest-procs)
       first-proc
@@ -591,23 +643,33 @@
       (error "Empty sequence -- ANALYZE"))
     (loop (car procs) (cdr procs))))
 
+
 ;; analyze-applicationは初期applyに似ているが解析を行わない.
 (define (analyze-application exp)
   (let ((pproc (analyze (operator exp)))
         (aprocs (map analyze (operands exp))))
-    (lambda (env)
-      (execute-application (pproc env)
-                           (map (lambda (aproc) (aproc env))
-                                aprocs)))))
+    (lambda (env succeed fail)
+      (pproc env
+             (lambda (proc fail2)
+               (get-args aprocs
+                         env
+                         (lambda (args fail3)
+                           (execute-application
+                             proc args succeed fail3))
+                         fail2))
+             fail))))
 
 (define (execute-application proc args)
   (cond ((primitive-procedure? proc)
-         (apply-primitive-procedure proc args))
+         (succeed (apply-primitive-procedure proc args)
+                  fail))
         ((compound-procedure? proc)
          ((procedure-body proc)
           (extend-environment (procedure-parameters proc)
                               args
-                              (procedure-environment proc))))
+                              (procedure-environment proc))
+          succeed
+          fail))
         (else (error
                 "Unknown procedure type -- EXECUTE-APPLICATION"
                 proc))))
@@ -823,8 +885,9 @@
 ;;   非決定性Schemeでは, 式の評価はこれに加え "袋小路の発見" があり得る.
 ;;   袋小路を発見すると直前の選択点へバックトラックしなければならない. コイツのせいで複雑である.
 
-;; ambは環境とふたつの継続手続き, 計3つの引数をとる.
+;; ambは環境とふたつの"継続"手続き, 計3つの引数をとる.
 ;; 2つの継続とは成功継続(success continuation), 失敗継続(failure continuation)である.
+;; amb評価器の複雑さのほとんどは実行手続きが互いに呼び出す時の, 継続を引き渡す機構に由来する.
 
 ;; amb ... 評価器に組み込む.
 (define (amb? exp) (tagged-list? exp 'amb))
@@ -833,6 +896,50 @@
 ;; > またanalyzeの振り分け部に, この特殊形式を認識し, 適切な実行手続きを生成する節を追加しなければならない.
 ;; .oO (analyzeはなかったことになったと思ってた)
 
+;; トップレベルの手続き ambeval
+(define (ambeval exp env succeed fail)
+  ((analyze exp) env succeed fail))
+
+;; 実行手続きの一般形はこんな感じ
+;    (lambda (env succeed fail)
+;      (lambda (value fail) ...) ;; succeedのかたち
+;      (lambda () ...) ;; failのかたち
+;      )
+;
+;; 例:
+;    (ambeval <exp>
+;             the-global-environment
+;             (lambda (value fail) value)
+;             (lambda () 'failed))
 
 
+(define (get-args aprocs env succeed fail)
+  (if (null? aprocs)
+    (succeed '() fail)
+    ((car aprocs) env
+                  ;;このaprocsの成功継続
+                  (lambda (arg fail2)
+                    (get-args (cdr aprocs)
+                              env
+                              ;;get-argsの再帰呼び出しの成功継続
+                              (lambda (args fail3)
+                                (succeed (cons arg args)
+                                         fail3))
+                              fail2))
+                  fail)))
+
+
+(define (analyze-amb exp)
+  (let ((cprocs (map analyze (amb-choices exp))))
+    (lambda (env succeed fail)
+      (define (try-next choices)
+        (if (null? choices)
+          (fail)
+          ((car choices) env
+                         succeed
+                         (lambda ()
+                           (try-next (cdr choices))))))
+      (try-next cprocs))))
+
+;; => q4.52.scm, q4.53.scm, q4.54.scm
 
