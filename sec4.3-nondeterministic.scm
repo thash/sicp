@@ -503,114 +503,114 @@
 ;;  evalから構文解析analyzeを切り出す.
 
 ;; 注意: sec4.scm全体をloadした場合, 冒頭のevalを上書きする.
-(define (eval exp env)
-  (analyze exp) env)
-
-(define (analyze exp)
-  (cond ((self-evaluating? exp)
-         (analyze-self-evaluating exp))
-        ((quoted? exp) (analyze-quoted exp))
-        ((variable? exp) (analyze-variable exp))
-        ((assignment? exp) (analyze-assignment exp))
-        ((definition? exp) (analyze-definition exp))
-        ((if? exp) (analyze-if exp))
-        ((lambda? exp) (analyze-lambda exp))
-        ((begin? exp) (analyze-sequence (begin-actions exp)))
-        ((cond? exp) (analyze (cond->if exp)))
-        ((application? exp) (analyze-application exp))
-        (else
-          (error "Unknown expression type -- ANALYZE" exp))))
-
-;;;  次に, analyze内で利用されている以下の手続きを定義していく.
-;;;  基本的には実行フェイズに実行されるlambda式を返す.
-;;;  その前にできることはしておく.
-;; analyze-self-evaluating
-;; analyze-quoted
-;; analyze-variable
-;; analyze-assignment
-;; analyze-definition
-;; analyze-if
-;; analyze-lambda
-;; analyze-sequence
-;; analyze-application
-
-;; 環境引数を無視して式を実行
-(define (analyze-self-evaluating exp)
-  (lambda (env) exp))
-
-(define (analyze-quoted exp)
-  (let ((qval (text-of-quotation exp)))
-    (lambda (env) qval)))
-
-;; 変数探索は実行フェイズに行わなければならない.
-(define (analyze-variable exp)
-  (lambda (env) (lookup-variable-value exp env)))
-
-;; assignmentとdefinitionは1度だけ解析すれば良い.
-(define (analyze-assignment exp)
-  (let ((var (assignment-variable exp))
-        (vproc (analyze (assignment-value exp))))
-    (lambda (env)
-      (set-variable-value! var (vproc env) env)
-      'ok)))
-
-(define (analyze-definition exp)
-  (let ((var (definition-variable exp))
-        (vproc (analyze (definition-value exp))))
-    (lambda (env)
-      (define-variable! var (vproc env) env)
-      'ok)))
-
-;; if は解析時に条件文, trueの時, elseの時の内容を解析しておいて実行時に分岐
-(define (analyze-if exp)
-  (let ((pproc (analyze (if-predicate exp)))
-        (cproc (analyze (if-consequent exp)))
-        (aproc (analyze (if-alternative exp))))
-    (lambda (env)
-      (if (true? (pproc env))
-        (cproc env)
-        (aproc env)))))
-
-(define (analyze-lambda exp)
-  (let ((vars (lambda-parameters exp))
-        (bproc (analyze-sequence (lambda-body exp))))
-    (lambda (env) (make-procedure vars bproc env))))
-
-;; expではなくexps.
-;; そもそもlambdaは2個の式を実行できるようになってるの?
-(define (analyze-sequence exps)
-  (define (sequentially proc1 proc2)
-    (lambda (env) (proc1 env) (proc2 env)))
-  (define (loop first-proc rest-procs)
-    (if (null? rest-procs)
-      first-proc
-      (loop (sequentially first-proc (car rest-procs))
-            (cdr rest-procs))))
-  (let ((procs (map analyze exps)))
-    (if (null? procs)
-      (error "Empty sequence -- ANALYZE"))
-    (loop (car procs) (cdr procs))))
-
-;; analyze-applicationは初期applyに似ているが解析を行わない.
-(define (analyze-application exp)
-  (let ((pproc (analyze (operator exp)))
-        (aprocs (map analyze (operands exp))))
-    (lambda (env)
-      (execute-application (pproc env)
-                           (map (lambda (aproc) (aproc env))
-                                aprocs)))))
-
-(define (execute-application proc args)
-  (cond ((primitive-procedure? proc)
-         (apply-primitive-procedure proc args))
-        ((compound-procedure? proc)
-         ((procedure-body proc)
-          (extend-environment (procedure-parameters proc)
-                              args
-                              (procedure-environment proc))))
-        (else (error
-                "Unknown procedure type -- EXECUTE-APPLICATION"
-                proc))))
+; (define (eval exp env)
+;   (analyze exp) env)
+;
+; (define (analyze exp)
+;   (cond ((self-evaluating? exp)
+;          (analyze-self-evaluating exp))
+;         ((quoted? exp) (analyze-quoted exp))
+;         ((variable? exp) (analyze-variable exp))
+;         ((assignment? exp) (analyze-assignment exp))
+;         ((definition? exp) (analyze-definition exp))
+;         ((if? exp) (analyze-if exp))
+;         ((lambda? exp) (analyze-lambda exp))
+;         ((begin? exp) (analyze-sequence (begin-actions exp)))
+;         ((cond? exp) (analyze (cond->if exp)))
+;         ((application? exp) (analyze-application exp))
+;         (else
+;           (error "Unknown expression type -- ANALYZE" exp))))
+;
+; ;;;  次に, analyze内で利用されている以下の手続きを定義していく.
+; ;;;  基本的には実行フェイズに実行されるlambda式を返す.
+; ;;;  その前にできることはしておく.
+; ;; analyze-self-evaluating
+; ;; analyze-quoted
+; ;; analyze-variable
+; ;; analyze-assignment
+; ;; analyze-definition
+; ;; analyze-if
+; ;; analyze-lambda
+; ;; analyze-sequence
+; ;; analyze-application
+;
+; ;; 環境引数を無視して式を実行
+; (define (analyze-self-evaluating exp)
+;   (lambda (env) exp))
+;
+; (define (analyze-quoted exp)
+;   (let ((qval (text-of-quotation exp)))
+;     (lambda (env) qval)))
+;
+; ;; 変数探索は実行フェイズに行わなければならない.
+; (define (analyze-variable exp)
+;   (lambda (env) (lookup-variable-value exp env)))
+;
+; ;; assignmentとdefinitionは1度だけ解析すれば良い.
+; (define (analyze-assignment exp)
+;   (let ((var (assignment-variable exp))
+;         (vproc (analyze (assignment-value exp))))
+;     (lambda (env)
+;       (set-variable-value! var (vproc env) env)
+;       'ok)))
+;
+; (define (analyze-definition exp)
+;   (let ((var (definition-variable exp))
+;         (vproc (analyze (definition-value exp))))
+;     (lambda (env)
+;       (define-variable! var (vproc env) env)
+;       'ok)))
+;
+; ;; if は解析時に条件文, trueの時, elseの時の内容を解析しておいて実行時に分岐
+; (define (analyze-if exp)
+;   (let ((pproc (analyze (if-predicate exp)))
+;         (cproc (analyze (if-consequent exp)))
+;         (aproc (analyze (if-alternative exp))))
+;     (lambda (env)
+;       (if (true? (pproc env))
+;         (cproc env)
+;         (aproc env)))))
+;
+; (define (analyze-lambda exp)
+;   (let ((vars (lambda-parameters exp))
+;         (bproc (analyze-sequence (lambda-body exp))))
+;     (lambda (env) (make-procedure vars bproc env))))
+;
+; ;; expではなくexps.
+; ;; そもそもlambdaは2個の式を実行できるようになってるの?
+; (define (analyze-sequence exps)
+;   (define (sequentially proc1 proc2)
+;     (lambda (env) (proc1 env) (proc2 env)))
+;   (define (loop first-proc rest-procs)
+;     (if (null? rest-procs)
+;       first-proc
+;       (loop (sequentially first-proc (car rest-procs))
+;             (cdr rest-procs))))
+;   (let ((procs (map analyze exps)))
+;     (if (null? procs)
+;       (error "Empty sequence -- ANALYZE"))
+;     (loop (car procs) (cdr procs))))
+;
+; ;; analyze-applicationは初期applyに似ているが解析を行わない.
+; (define (analyze-application exp)
+;   (let ((pproc (analyze (operator exp)))
+;         (aprocs (map analyze (operands exp))))
+;     (lambda (env)
+;       (execute-application (pproc env)
+;                            (map (lambda (aproc) (aproc env))
+;                                 aprocs)))))
+;
+; (define (execute-application proc args)
+;   (cond ((primitive-procedure? proc)
+;          (apply-primitive-procedure proc args))
+;         ((compound-procedure? proc)
+;          ((procedure-body proc)
+;           (extend-environment (procedure-parameters proc)
+;                               args
+;                               (procedure-environment proc))))
+;         (else (error
+;                 "Unknown procedure type -- EXECUTE-APPLICATION"
+;                 proc))))
 
 
 ;; => q4.22.scm, q4.23.scm, q4.24.scm
