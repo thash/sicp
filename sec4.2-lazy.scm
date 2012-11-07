@@ -434,11 +434,11 @@
 (define input-prompt ";;; L-Eval input:")
 (define output-prompt ";;; L-Eval value")
 
-(use gauche.time)
+; (use gauche.time)
 (define (driver-loop)
   (prompt-for-input input-prompt)
   (let ((input (read)))
-    (let ((output (time (actual-value input the-global-environment))))
+    (let ((output (actual-value input the-global-environment)))
       (annouce-output output-prompt)
       (user-print output)))
   (driver-loop))
@@ -752,8 +752,8 @@
 
 ;; 注意: 以下はdriver-loopを走らせてからdefすること.めどい
 
-; (driver-loop)
-
+;    (driver-loop)
+;
 ;    (define (cons x y)
 ;      (lambda (m) (m x y)))
 ;
@@ -789,17 +789,17 @@
 ;    (define ones (cons 1 ones))
 ;    (define integers (cons 1 (add-lists ones integers)))
 ;
-;    ;; これらの遅延リストは3章のストリームより遅延度が高い. carも遅延されてる.
-;    ;; メリット: 3.5.4. でdelayかけまくっていたところが, リストがすべて遅延することによりすっきりする.
-;
-;    (define (integral integrand initial-value dt)
-;      (define int
-;        (cons initial-value
-;              (add-lists (scale-list integrand dt)
-;                         int)))
-;      int)
-;
-;    (define (solve f y0 dt)
-;      (define y (integral dy y0 dt))
-;      (define dy (map f y))
-;      y)
+;    ;;; これらの遅延リストは3章のストリームより遅延度が高い. carも遅延されてる.
+;    ;;; メリット: 3.5.4. でdelayかけまくっていたところが, リストがすべて遅延することによりすっきりする.
+;    ;
+;    ;(define (integral integrand initial-value dt)
+;    ;  (define int
+;    ;    (cons initial-value
+;    ;          (add-lists (scale-list integrand dt)
+;    ;                     int)))
+;    ;  int)
+;    ;
+;    ;(define (solve f y0 dt)
+;    ;  (define y (integral dy y0 dt))
+;    ;  (define dy (map f y))
+;    ;  y)
