@@ -392,10 +392,15 @@
         (list 'cons cons)
         (list 'null? null?)
         (list '+ +)
+        (list '- -)
         (list '* *)
         (list '/ /)
+        (list '> >)
+        (list '< <)
+        (list '= =)
         (list 'display display)
         (list 'newline newline)
+        (list 'set! set!)
         ;; (list 'map map)  ;; q4.14.scm でLousがここにmapを加えようとするが, 加えると動かない, らしい(再現できず)
         ;; ....
         ))
@@ -429,10 +434,11 @@
 (define input-prompt ";;; L-Eval input:")
 (define output-prompt ";;; L-Eval value")
 
+(use gauche.time)
 (define (driver-loop)
   (prompt-for-input input-prompt)
   (let ((input (read)))
-    (let ((output (actual-value input the-global-environment)))
+    (let ((output (time (actual-value input the-global-environment))))
       (annouce-output output-prompt)
       (user-print output)))
   (driver-loop))
@@ -700,10 +706,10 @@
 
 ;;; thunk ;;;
 ;; これはmemo化されていないforce-it version.1である.
-(define (force-it obj)
-  (if (thunk? obj)
-    (actual-value (thunk-exp obj) (thunk-env obj))
-    obj))
+; (define (force-it obj)
+;   (if (thunk? obj)
+;     (actual-value (thunk-exp obj) (thunk-env obj))
+;     obj))
 
 (define (thunk-exp thunk) (cadr thunk))
 (define (thunk-env thunk) (caddr thunk))
