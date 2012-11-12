@@ -381,6 +381,7 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'not not)
         (list '+ +)
         (list '* *)
         (list '/ /)
@@ -390,6 +391,7 @@
         (list 'display display)
         (list 'newline newline)
         (list 'set! set!)
+        (list 'require require)
         ;; (list 'map map)  ;; q4.14.scm でLousがここにmapを加えようとするが, 加えると動かない, らしい(再現できず)
         ;; ....
         ))
@@ -432,7 +434,8 @@
         (begin
           (newline)
           (display ";;; Starting a new problem ")
-          (ambeval input
+          (newline)
+          #?=(ambeval input
                    the-global-environment
                    ;; ambeval 成功
                    (lambda (val next-alternative)
@@ -664,7 +667,7 @@
                          fail2))
              fail))))
 
-(define (execute-application proc args)
+(define (execute-application proc args succeed fail)
   (cond ((primitive-procedure? proc)
          (succeed (apply-primitive-procedure proc args)
                   fail))
