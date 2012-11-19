@@ -12,10 +12,10 @@
   (amb (car items) (an-element-of (cdr items))))
 
 (define (distinct? items)
-  (if (null? items) true
-    (if (member (car items) (cdr items))
-      false
-      (distinct? (cdr items)))))
+  (cond ((null? items) true)
+        ((null? (cdr items)) true)
+        ((member (car items) (cdr items)) false)
+        (else (distinct? (cdr items)))))
 
 ;; multiple-dwelling に手を加える
 (define (multiple-dwelling)

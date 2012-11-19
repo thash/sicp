@@ -36,10 +36,10 @@
 
 ;; multiple-dwellingを動かすにはdistinct?の実装が必要
 (define (distinct? items)
-  (if (null? items) true
-    (if (member (car items) (cdr items))
-      false
-      (distinct? (cdr items)))))
+  (cond ((null? items) true)
+        ((null? (cdr items)) true)
+        ((member (car items) (cdr items)) false)
+        (else (distinct? (cdr items)))))
 
 ;;;; Amb-Eval input:
 ;(multiple-dwelling)
