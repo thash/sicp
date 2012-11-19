@@ -2,7 +2,7 @@
 ;; 4.3.2. 非決定性プログラムの例
 (load "./sec4.3-nondeterministic")
 
-;(driver-loop)
+(driver-loop)
 ;;; driver-loopを起動した後に定義する. >>> ココカラ
 (define (require p)
   (if (not p) (amb)))
@@ -51,6 +51,7 @@
 ;; => q4.38.scm, q4.39.scm, q4.40.scm, q4.41.scm, q4.42.scm, q4.43.scm, q4.44.scm
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 自然言語の構文解析 ;;;
 ;; (ええからはよ実装せえや)
 
@@ -59,12 +60,7 @@
 (define verbs '(verbs studies lectures eats sleeps))
 (define articles '(articles the a))
 
-;; 文法.
-;; The cat eats を構文解析すると
-(sentence (noun-phrase (article the) (noun cat))
-          (verb eats))
-
-;; 道具箱
+;; 道具箱 -- parseを定義するまで
 (define (parse-sentence)
   (list 'sentence
         (parse-noun-phrase)
@@ -91,6 +87,14 @@
   (let ((sent (parse-sentence)))
     (require (null? *unparsed*))
     sent))
+
+;; <<<< ココマデ driver-loop 上で定義
+;; sample: The cat eats を構文解析する
+
+(parse '(the cat eats))
+;; => (sentence (noun-phrase (articles the) (noun cat)) (verbs eats))
+
+
 
 ;; 探索とバックトラックは複雑な文法を扱うとき本当に有効である(ええからはよ実装せえや)
 (define prepositions '(prep for to in by with))
@@ -143,8 +147,18 @@
                  (simple-noun-phrase
                    (article the) (noun class)))))
 
+;; the student with ... 実際の出力結果 {{{
+;    ;;; Amb-Eval input:
+;    (parse '(the student with the cat sleeps in the class))
+;
+;    ;;; Starting a new problem
+;
+;    ;;; Amb-Eval value
+;    (sentence (noun-phrase (simple-noun-phrase (articles the) (noun student)) (prep-phrase (prep with) (simple-noun-phrase (articles the) (noun cat)))) (verb-phrase (verbs sleeps) (prep-phrase (prep in) (simple-noun-phrase (articles the) (noun class))))) ; }}}
+
 ;; 別の例
 (parse '(the professor lectures to the student with the cat))
+
 ;; =>
 (sentence
   (simple-noun-phrase (article the) (noun professor))
@@ -169,6 +183,24 @@
                    (prep-phrase (prep with)
                                 (simple-noun-phrase
                                   (article the) (noun cat)))))))
+
+;; the professor lectures ... 実際の出力結果 {{{
+;  ;;; Amb-Eval input:
+;  (parse '(the professor lectures to the student with the cat))
+;
+;  ;;; Starting a new problem
+;  ;;; Amb-Eval value
+;  (sentence (simple-noun-phrase (articles the) (noun professor)) (verb-phrase (verb-phrase (verbs lectures) (prep-phrase (prep to) (simple-noun-phrase (articles the) (noun student)))) (prep-phrase (prep with) (simple-noun-phrase (articles the) (noun cat)))))
+;
+;  ;;; Amb-Eval input:
+;  try-again
+;  ;;; Amb-Eval value
+;  (sentence (simple-noun-phrase (articles the) (noun professor)) (verb-phrase (verbs lectures) (prep-phrase (prep to) (noun-phrase (simple-noun-phrase (articles the) (noun student)) (prep-phrase (prep with) (simple-noun-phrase (articles the) (noun cat)))))))
+;
+;  ;;; Amb-Eval input:
+;  try-again
+;  ;;; There are no more values of
+;  (parse '(the professor lectures to the student with the cat)) ;}}}
 
 ;; => q4.45.scm, q4.46.scm, q4.47.scm, q4.48.scm, q4.49.scm
 

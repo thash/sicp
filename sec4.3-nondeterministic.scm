@@ -289,7 +289,7 @@
         (list 'display display)
         (list 'newline newline)
         (list 'map map) ;; for q4.43.scm
-        ;(list 'set! set!)
+        (list 'set! set!) ;; for parse-word
         ;; ....
         ))
 
