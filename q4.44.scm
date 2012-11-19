@@ -38,3 +38,12 @@
                   (let ((queens (list q1 q2 q3 q4 q5 q6 q7 q8)))
                     (require (safe? queens))
                     queens))))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; 対角線にない
+;; requireに失敗したらbacktrackする
+;; an-integer-between が使える
+;; n-queenとして一般化することもできるよ
+
+

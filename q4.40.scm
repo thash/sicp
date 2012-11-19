@@ -22,7 +22,7 @@
 (define (multiple-dwelling)
   (let ((cooper (amb 2 3 4 5))
         (miller (amb 1 2 3 4 5)))
-    (require (> miller cooper))
+    (require (> miller cooper)) ;; あれ, この条件ならcooper 1-5, miller 2-5じゃね?
     (let ((fletcher (amb 2 3 4)))
       (require (not (= (abs (- fletcher cooper)) 1)))
       (let ((smith (amb 1 2 3 4 5)))
@@ -35,4 +35,7 @@
                 (list 'fletcher fletcher)
                 (list 'miller miller)
                 (list 'smith smith)))))))
+
+;(filter multiple-dwelling (permutation '(1 2 3 4 5)))
+;みたいな表示方法つかってた.
 

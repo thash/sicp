@@ -1,6 +1,22 @@
-;; http://wqzhang.wordpress.com/2010/04/28/sicp-exercise-4-43/
-;; コピペ
+(load "./sec4.3-nondeterministic")
 
+;(driver-loop)
+;;; driver-loopを起動した後に定義する. >>> ココカラ
+(define (require p)
+  (if (not p) (amb)))
+
+(define (an-element-of items)
+  (require (not (null? items)))
+  (amb (car items) (an-element-of (cdr items))))
+
+(define (distinct? items)
+  (cond ((null? items) true)
+        ((null? (cdr items)) true)
+        ((member (car items) (cdr items)) false)
+        (else (distinct? (cdr items)))))
+
+
+;; http://wqzhang.wordpress.com/2010/04/28/sicp-exercise-4-43/
 (define (yacht-puzzle)
 ; father = (last-name daughter yacht)
   (define (last-name f) (car f))
@@ -37,3 +53,5 @@
           (require (eq? (daughter Parker)
                         (yacht (father-of 'Gabrielle fathers))))
           fathers)))))
+
+
