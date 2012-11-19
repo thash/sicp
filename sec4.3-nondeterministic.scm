@@ -259,13 +259,19 @@
 (define (primitive-implementation proc) (cadr proc))
 
 ;; これは本文の進行に応じて増やしていく.
+;; ambはprimitive-proceduresではない. 特殊形式として実装する.
+;; requireはprimitive-proceduresではない. driver-loop起動後にdefineする.
 (define primitive-procedures
   (list (list 'car car)
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'list list)
+        (list 'memq memq)
+        (list 'member member)
         (list 'not not)
         (list '+ +)
+        (list '- -)
         (list '* *)
         (list '/ /)
         (list '> >)
@@ -273,9 +279,14 @@
         (list '< <)
         (list '<= <=)
         (list '= =)
+        (list 'abs abs)
+        (list 'remainder remainder)
+        (list 'integer? integer?)
+        (list 'sqrt sqrt)
+        (list 'eq? eq?)
         (list 'display display)
         (list 'newline newline)
-        (list 'set! set!)
+        ;(list 'set! set!)
         ;; ....
         ))
 
@@ -779,16 +790,20 @@
 ;   (require (not (eq? x y)))
 ;   (list x y count)) }}}3
 
-(display "ここでrequire, an-element-ofをdriver-loop中にload")
-(driver-loop)
+;(display "ここでrequire, an-element-ofをdriver-loop中にload")
+;(driver-loop)
 
-(define (require p)
-  (if (not p) (amb)))
+;(define (require p)
+;  (if (not p) (amb)))
+;
+;;; an-element-of の選び方(car取って再帰し, 前から順に調べていく)は深さ優先探索になっている.
+;;; ランダムに選びたくなるが, 規則的に探索する(systematically search)のがよい.
+;(define (an-element-of items)
+;  (require (not (null? items)))
+;  (amb (car items) (an-element-of (cdr items))))
 
-(define (an-element-of items)
-  (require (not (null? items)))
-  (amb (car items) (an-element-of (cdr items))))
+;;; 用例
+;;;    (define (an-integer-starting-from n)
+;;;      (amb n (an-integer-starting-from (+ n 1))))
 
-(define (an-integer-starting-from n)
-  (amb n (an-integer-starting-from (+ n 1))))
 
