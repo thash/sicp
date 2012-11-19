@@ -1,7 +1,7 @@
 ;; 内部定義を解釈するためにunassigned方式を採る. letが使えると過程.
 
 ;; (a). lookup-variable-valueを変更し, 見つけた値が*unassigned*ならエラーにする
-(load "./sec4") ;; letを書き加えた.
+(load "./sec4.1-The-Metacircular-Evaluator") ;; letを書き加えた.
 
 (define (lookup-variable-value var env)
   (define (env-loop env)

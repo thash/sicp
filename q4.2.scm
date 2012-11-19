@@ -1,7 +1,7 @@
 ;; いらんことしいのLouisたんがeval中のcond順序を変えればよくねと言う.
 ;; 手続き作用(apply)の節を代入より前に持ってきたほうが効率が良いなどと供述しており
 
-; gosh> (load "./sec4")
+; gosh> (load "./sec4.1-The-Metacircular-Evaluator")
 ; #t
 ; gosh> (driver-loop)
 ; ;;; M-Eval input:

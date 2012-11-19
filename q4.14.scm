@@ -1,4 +1,4 @@
-(load "./sec4")
+(load "./sec4.1-The-Metacircular-Evaluator")
 
 ;; "Evaはmapの定義を入力し" => 素直なmapの再定義
 ;; つーかこの定義あってもなくても動く
@@ -12,7 +12,7 @@
 
 ;; で, またLouisか. Lousはmapをprimitive-procedureとして組み込んだそうな.
 
-;; sec4.scm の
+;; sec4.1-The-Metacircular-Evaluator.scm の
 (define primitive-procedures
   (list (list 'car car)
         (list 'cdr cdr)

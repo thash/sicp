@@ -1,6 +1,6 @@
-;; sec4.scm のlist-of-valuesが被演算子を左右どっちから評価するかは評価系のconsに依存している.
+;; sec4.1-The-Metacircular-Evaluator.scm のlist-of-valuesが被演算子を左右どっちから評価するかは評価系のconsに依存している.
 ;; 評価系のconsがどちらであろうとも, 必ず左から(or 右から)評価するようなlist-of-valuesを作れ.
-(load "./sec4")
+(load "./sec4.1-The-Metacircular-Evaluator")
 
 ;; evalは動いているか
 ;     gosh> (define a 1)
