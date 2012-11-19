@@ -270,6 +270,8 @@
         (list 'memq memq)
         (list 'member member)
         (list 'not not)
+        (list 'and and)
+        (list 'or or)
         (list '+ +)
         (list '- -)
         (list '* *)
@@ -286,6 +288,7 @@
         (list 'eq? eq?)
         (list 'display display)
         (list 'newline newline)
+        (list 'map map) ;; for q4.43.scm
         ;(list 'set! set!)
         ;; ....
         ))
