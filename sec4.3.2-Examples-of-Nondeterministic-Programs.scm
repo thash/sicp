@@ -88,13 +88,9 @@
     (require (null? *unparsed*))
     sent))
 
-;; <<<< ココマデ driver-loop 上で定義
 ;; sample: The cat eats を構文解析する
-
-(parse '(the cat eats))
+;(parse '(the cat eats))
 ;; => (sentence (noun-phrase (articles the) (noun cat)) (verbs eats))
-
-
 
 ;; 探索とバックトラックは複雑な文法を扱うとき本当に有効である(ええからはよ実装せえや)
 (define prepositions '(prep for to in by with))
@@ -131,6 +127,9 @@
                              noun-phrase
                              (parse-prepositional-phrase)))))
   (maybe-extend (parse-simple-noun-phrase)))
+
+
+;; <<< ココマデ driver-loop 内で評価する
 
 ;; ここまでやると, 以下のような複雑な文を解析できる(うれしげに言うとらんと実装せえっちゅうに)
 (parse '(the student with the cat sleeps in the class))
