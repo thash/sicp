@@ -1,3 +1,5 @@
+;; Alyssaは文を構文解析するより面白い文を生成する方に関心がある.
+;; parse-wordを"入力文を無視する代わりに常に成功し, 適切な語を生成する"手続きに作りなおした.
 ;; 文を生成する
 (define (parse-word word-list)
   (list (car word-list) (an-element-of (cdr word-list))))
