@@ -578,6 +578,7 @@
 ;;   袋小路を発見すると直前の選択点へバックトラックしなければならない. コイツのせいで複雑である.
 
 ;; ambは環境とふたつの"継続"手続き, 計3つの引数をとる.
+;; 継続について: http://bit.ly/keizoku
 ;; 2つの継続とは成功継続(success continuation), 失敗継続(failure continuation)である.
 ;; amb評価器の複雑さのほとんどは実行手続きが互いに呼び出す時の, 継続を引き渡す機構に由来する.
 
@@ -586,24 +587,12 @@
 (define (amb-choices exp) (cdr exp))
 
 ;; > またanalyzeの振り分け部に, この特殊形式を認識し, 適切な実行手続きを生成する節を追加しなければならない.
-;; .oO (analyzeはなかったことになったと思ってた)
+;; ((amb? exp) (analyze-amb exp))
+;; をanalyzeに追加
 
 ;; トップレベルの手続き ambeval
 (define (ambeval exp env succeed fail)
   ((analyze exp) env succeed fail))
-
-;; 実行手続きの一般形はこんな感じ
-;    (lambda (env succeed fail)
-;      (lambda (value fail) ...) ;; succeedのかたち
-;      (lambda () ...) ;; failのかたち
-;      )
-;
-;; 例:
-;    (ambeval <exp>
-;             the-global-environment
-;             (lambda (value fail) value)
-;             (lambda () 'failed))
-
 
 (define (get-args aprocs env succeed fail)
   (if (null? aprocs)
@@ -620,7 +609,6 @@
                               fail2))
                   fail)))
 
-
 (define (analyze-amb exp)
   (let ((cprocs (map analyze (amb-choices exp))))
     (lambda (env succeed fail)
@@ -632,6 +620,19 @@
                          (lambda ()
                            (try-next (cdr choices))))))
       (try-next cprocs))))
+
+;; 実行手続きの一般形
+;    (lambda (env succeed fail)
+;      (lambda (value fail) ...) ;; 成功継続
+;      (lambda () ...) ;; 失敗継続
+;      )
+;
+;; 例:
+;    (ambeval <exp>
+;             the-global-environment
+;             (lambda (value fail) value)
+;             (lambda () 'failed))
+
 
 ;; => q4.52.scm, q4.53.scm, q4.54.scm
 
