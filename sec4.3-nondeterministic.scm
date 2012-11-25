@@ -392,6 +392,8 @@
         (else
           (error "Unknown expression type -- ANALYZE" exp))))
 
+;; まず考える単純なパターンでは, succeedしか有り得ない(常に成功する).
+;; ただし失敗継続はそのまま引き回す.
 (define (analyze-self-evaluating exp)
   (lambda (env succeed fail)
     (succeed exp fail)))
@@ -407,14 +409,18 @@
     (succeed (lookup-variable-value exp env)
              fail)))
 
-;; assignmentとdefinitionは1度だけ解析すれば良い.
+;; assignmentとdefinitionは1度だけ解析すれば良い(vproc).
+;; *A*: vprocはset!で始まるclosure. 成功継続が(lambda (val fail2))のブロック.
+;; *1*: 成功継続. ここではset!の作用を起こした後に(succeed exp fail)形を返す.
+;; *B*: 実際に代入する前にold-valueに保存
+;; *2*: 将来の失敗継続. 代入し直してold-valueに戻す処理.
 (define (analyze-assignment exp)
   (let ((var (assignment-variable exp))
         (vproc (analyze (assignment-value exp))))
     (lambda (env succeed fail)
-      (vproc env
+      (vproc env ; *A*
              (lambda (val fail2) ; *1*
-               (let ((old-value
+               (let ((old-value ; *B*
                        (lookup-variable-value var env)))
                  (set-variable-value! var val env)
                  (succeed 'ok
