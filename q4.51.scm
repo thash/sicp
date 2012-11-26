@@ -1,7 +1,7 @@
 (load "./sec4.3-nondeterministic")
 ;; 失敗の時にもやり直さない permanent-set! という新しい種類の代入を実装せよ.
 ;; 例えば次のように, リストから2つの異なる要素を選び, 成功した選択ができるまでに必要な試行数が得られる.
-;;; 前提のrequire定義(driver-loop中) {{{
+;;; require定義(driver-loop中) {{{
 (define (require p)
   (if (not p) (amb)))
 (define (an-element-of items)

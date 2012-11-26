@@ -50,13 +50,13 @@
              (lambda ()
                (fproc env succeed fail))))))
 
-;; driver-loop後以下を定義
+;;; require定義(driver-loop中) {{{
 (define (require p)
   (if (not p) (amb)))
-
 (define (an-element-of items)
   (require (not (null? items)))
   (amb (car items) (an-element-of (cdr items))))
+;;; }}} 前提定義
 
 ;; 上のテストを実行.
 
