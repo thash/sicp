@@ -286,6 +286,7 @@
         (list 'integer? integer?)
         (list 'sqrt sqrt)
         (list 'eq? eq?)
+        (list 'even? even?)
         (list 'display display)
         (list 'newline newline)
         (list 'map map) ;; for q4.43.scm
