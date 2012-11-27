@@ -465,16 +465,16 @@
       (succeed (make-procedure vars bproc env)
                fail))))
 
-;; expではなくexps.
-;; そもそもlambdaは2個の式を実行できるようになってるの?
+;; expではなくexps. リストの内容を連続で実行する.
+;; "aに続きbを逐次的に実行するには, bを呼び出す(ような, aの)成功手続きをもってaを呼び出す"
 (define (analyze-sequence exps)
   (define (sequentially a b)
     (lambda (env succeed fail)
       (a env
          ;; aを呼び出す時の成功継続
          (lambda (a-value fail2)
-           (b env succeed fail2))
-         ;; bを呼び出す時の失敗継続
+           (b env succeed fail2)) ;; <= bを呼び出す(ような, aの)成功手続き
+         ;; aを呼び出す時の失敗継続
          fail)))
   (define (loop first-proc rest-procs)
     (if (null? rest-procs)
@@ -557,6 +557,7 @@
 ;;; NOTE: driver-loop起動後にrequireとan-element-ofを定義する.
 ; (driver-loop)
 
+; ;; pが成立すればスルーされるが, pが成立しなければ(amb) = 失敗式 を実行する
 ; (define (require p)
 ;   (if (not p) (amb)))
 ;
@@ -566,7 +567,7 @@
 ;   (require (not (null? items)))
 ;   (amb (car items) (an-element-of (cdr items))))
 ;
-; ;; ambは無限の表現も可能である. まぁ3章の無限streamと同じだね
+; ;; ambは無限の表現も可能である. 3章の無限streamと似てる
 ; (define (an-integer-starting-from n)
 ;   (amb n (an-integer-starting-from (+ n 1))))
 
@@ -589,6 +590,9 @@
 ;; ambは環境とふたつの"継続"手続き, 計3つの引数をとる.
 ;; 継続について: http://bit.ly/keizoku
 ;; 2つの継続とは成功継続(success continuation), 失敗継続(failure continuation)である.
+;; 評価の結果が値なら成功, その値を以て成功継続を呼び出す.
+;; 成功継続は, 将来失敗した時のために失敗継続を引き連れている.
+;; 失敗継続は別の道を試みる継続.
 ;; amb評価器の複雑さのほとんどは実行手続きが互いに呼び出す時の, 継続を引き渡す機構に由来する.
 
 ;; amb ... 評価器に組み込む.

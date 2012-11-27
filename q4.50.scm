@@ -16,6 +16,10 @@
         ((equal? x (car xs)) (cdr xs))
         (else (cons (car xs) (reject x (cdr xs))))))
 
+;; pick1, rejectのように破壊的に操作しなくても,
+;; ランダムな整数indexでlistを引いて,
+;; rejectの代わりにindex部分を覗いたリストをappendする方法もある
+
 ;; 動作確認 {{{2
 ; gosh> (define x '(1 2 3 4 5 6 7 8 9))
 ; gosh> (pick1 x)
@@ -137,6 +141,9 @@
 ;; q4.49.scm と同じ parse-word を定義
 (define (parse-word word-list)
   (list (car word-list) (an-element-of (cdr word-list))))
+
+;; an-element-ofを書き換えて q4.49.scm と同じparse-wordを使う以外に,
+;; parse-wordから直接pick1やrejectを使ってランダムにリストを生成する(?)方法もある.
 
 ;; 実行結果 {{{2
 ; ;;; Amb-Eval input:

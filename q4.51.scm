@@ -49,8 +49,8 @@
              (lambda (val fail2)
                (set-variable-value! var val env)
                (succeed 'ok
-                        (lambda () ;; 失敗継続でold-valueへ戻さない.
-                          (fail2))))
+                         ;; 失敗継続でold-valueへ戻さない. fail2だけになったためlambda不要.
+                         (fail2)))
              fail))))
 
 ;; 動作確認
