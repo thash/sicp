@@ -10,4 +10,4 @@
 (define-macro (delay proc)
   `(memo-proc (lambda () ,proc)))
 
-(load "./stream-common")
+(load "stream-common")

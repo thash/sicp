@@ -1,10 +1,11 @@
 (load "./sec3/table") ;; 2次元tableへのput/get.
-(load "./sec3/stream-common") ;; ストリームを使う
+(add-load-path "sec3" :relative)
+(load "./sec3/stream") ;; ストリームを使う
 
 (define true #t)
 (define false #f)
 
-;; stream-appendはsec3/stream-commonでは定義してない.
+;; stream-appendはsec3/streamでは定義してない.
 (define (stream-append s1 s2)
   (if (stream-null? s1)
       s2
