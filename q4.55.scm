@@ -5,7 +5,8 @@
 
 (load "./sec4.4-Serendip")
 
-;; 4.4.1. 推論的情報検索 サンプルデータ
+;;; 4.4.1. 推論的情報検索 サンプルデータ
+;; query-driver-loopを回した後に以下を実行する.
 (assert! (address (Bitdiddle Ben) (Slumerville (Ridge Road) 10)))
 (assert! (job (Bitdiddle Ben) (computer wizard)))
 (assert! (salary (Bitdiddle Ben) 60000))
@@ -45,24 +46,38 @@
 (assert! (can-do-job (computer wizard) (computer programmer)))
 (assert! (can-do-job (computer wizard) (computer technician)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;; 回答 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Queryの出し方:
+;; リストの数と内容完全マッチの時
+;  => (job ?x (computer programmer))
+;
+;; リストの数を指定, 内容1個マッチの時
+;  => (job ?x (computer ?type))
+;
+;; リストの数は任意, 内容1個マッチの時
+;  => (job ?x (computer . ?type))
+
+
+;; (a). Ben Bitdiddleに監督されているひとすべて
 ;;; Query input:
-(job ?x (computer programmer))
-(job ?x (computer ?type))
+(supervisor ?x (Bitdiddle Ben))
+;;; Query results:
+(supervisor (Tweakit Lem E) (Bitdiddle Ben))
+(supervisor (Fect Cy D) (Bitdiddle Ben))
+(supervisor (Hacker Alyssa P) (Bitdiddle Ben))
 
+;; (b). 経理部門(accounting division) のすべての人の名前と担当
+;;; Query input:
+(job ?x (accounting . ?type))
+;;; Query results:
+(job (Cratchet Robert) (accounting scrivener))
+(job (Scrooge Eben) (accounting chief accountant))
 
-;*** ERROR: invalid application: (#<promise 0x100740840>)
-;Stack Trace:
-;_______________________________________
-;  0  (find-assertions query-pattern frame)
-;        At line 76 of "./sec4.4-Serendip.scm"
-;  1  (map stream-car argstreams)
-;        At line 63 of "./sec3/stream-common.scm"
-;  2  (stream-map proc s)
-;        At line 335 of "./sec4.4-Serendip.scm"
-;  3  (qeval q (singleton-stream '()))
-;        At line 49 of "./sec4.4-Serendip.scm"
-;  4  (stream-map (lambda (frame) (instantiate q frame (lambda (v f
-;        At line 43 of "./sec4.4-Serendip.scm"
-;  5  (display-stream (stream-map (lambda (frame) (instantiate q fr
-;        At line 42 of "./sec4.4-Serendip.scm"
-
+;; (c). Slumervilleに住む人すべての名前と住所
+;;; Query input:
+(address ?x (Slumerville . ?type))
+;;; Query results:
+(address (Aull DeWitt) (Slumerville (Onion Square) 5))
+(address (Reasoner Louis) (Slumerville (Pine Tree Road) 80))
+(address (Bitdiddle Ben) (Slumerville (Ridge Road) 10))
