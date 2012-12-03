@@ -38,11 +38,9 @@
 (assert! (rule (lives-near-uniq ?person-1 ?person-2)
                (and (address ?person-1 (?town . ?rest-1))
                     (address ?person-2 (?town . ?rest-2))
-                    (id ?person-1 ?id-1)
-                    (id ?person-2 ?id-2)
-                    (lisp-value > ?id-1 ?id-2)
-                    (not (same ?person-1 ?person-2)))))
-
+                    (id ?person-1 ?id-1) ; ++
+                    (id ?person-2 ?id-2) ; ++
+                    (lisp-value > ?id-1 ?id-2)))) ; ++ not same不要.
 
 ;;; Query input:
 (lives-near-uniq ?person-1 ?person-2)

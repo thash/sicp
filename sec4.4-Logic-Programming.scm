@@ -29,7 +29,10 @@
 ;; これらの規則によって
 ;; append('(a b) '(c d)) => ? という問題を解くだけではなく
 ;; append(x y) => '(a b c d) となるすべてのx,yを見つけよ
-;; といった問題に答えることもできる. }}}2
+;; といった問題に答えることもできる.
+;;
+;; 条件を満たす
+;; }}}2
 
 ;; 評価器の実装
 ;; 実装は4.4.4. から始まるが, それまでのコードも動かしたいよねってことで動くやつを持ってくる.
@@ -41,6 +44,7 @@
 
 ;;; 4.4.1. 推論的情報検索 サンプルデータ
 ;; query-driver-loopを回した後に以下を実行する.
+;; (supervisor A B) は, BがAを監視する.
 (assert! (address (Bitdiddle Ben) (Slumerville (Ridge Road) 10)))
 (assert! (job (Bitdiddle Ben) (computer wizard)))
 (assert! (salary (Bitdiddle Ben) 60000))
@@ -79,6 +83,8 @@
 
 (assert! (can-do-job (computer wizard) (computer programmer)))
 (assert! (can-do-job (computer wizard) (computer technician)))
+(assert! (can-do-job (computer programmer) (computer programmer trainee)))
+(assert! (can-do-job (administration secretary) (administration big wheel))) ;; 秘書は社長に取って代われる. ﾜﾛﾀ
 
 ;;; Queryの出し方 ;;;
 ;; リストの数と内容完全マッチの時
@@ -90,4 +96,42 @@
 ;; リストの数は任意, 内容1個マッチの時
 ;  => (job ?x (computer . ?type))
 
+;; assert!で放り込んだデータがそのまま型にハマるものを探してくる感じ.
+;; ?のところは任意としてる.
 ;; => q4.55.scm - q4.63.scm
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; 規則(rule) ;;;
+(assert! (rule (outranked-by ?staff-person ?boss)
+               (or (supervisor ?staff-person ?boss)
+                   (and (supervisor ?staff-person ?middle-manager)
+                        (outranked-by ?middle-manager ?boss))))) ;; 再帰的に定義
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; プログラムとしての論理 ;;;
+(assert! (rule (append-to-form () ?y ?y)))
+(assert! (rule (append-to-form (?u . ?v) ?y (?u . ?z))
+               (append-to-form ?v ?y ?z)))
+
+
+;;; Query input:
+(append-to-form (a b) (c d) ?z)
+;;; Query results:
+(append-to-form (a b) (c d) (a b c d))
+
+;;; Query input:
+(append-to-form (a b) ?y (a b c d))
+;;; Query results:
+(append-to-form (a b) (c d) (a b c d))
+
+;;; Query input: くっつけると(a b c d)になるペアをすべて.
+(append-to-form ?x ?y (a b c d))
+;;; Query results:
+(append-to-form (a b c d) () (a b c d))
+(append-to-form () (a b c d) (a b c d))
+(append-to-form (a) (b c d) (a b c d))
+(append-to-form (a b) (c d) (a b c d))
+(append-to-form (a b c) (d) (a b c d))
+

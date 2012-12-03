@@ -43,3 +43,16 @@
 (grandson-of Methushael Jabal)
 
 ;; 結果が重複してるな...
+
+;; その他遊ぶ.
+;;; Query input:
+(grandson-of ?g ?p)
+
+;;; Query results:
+(grandson-of Methushael Jubal)
+(grandson-of Methushael Jabal)
+(grandson-of Mehujael Lamech)
+(grandson-of Irad Methushael)
+(grandson-of Enoch Mehujael)
+(grandson-of Cain Irad)
+(grandson-of Adam Enoch)

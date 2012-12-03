@@ -1,4 +1,5 @@
 ;; 合成質問(compound queries) -- and, or, notを使う.
+;; and, or, notはlisp組み込みではなくこの言語独特の動きをする. SQLに近い.
 ;; (a). Ben Bitdiddleが監督している人すべての名前とその住所
 ;; (b). 給料がBen Bitdiddleのそれより少ない人のすべてと, その人たちの給料と, Ben Bitdiddleの給料.
 ;; (c). 計算機部門に居ない人が監督している人すべてと, その監督者の名前と担当.

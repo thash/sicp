@@ -1,4 +1,4 @@
-;; rule の定義.
+;; rule(規則) の定義.
 ;; ref: http://www.serendip.ws/archives/2646
 
 ;;; answer ;;;
@@ -26,7 +26,7 @@
 ;;; Query input:
 (and (salary ?person ?salary)
      (salary ?substitution ?salary-sub)
-     (replace ?person ?substitution)
+     (replace ?substitution ?person)
      (lisp-value < ?salary ?salary-sub))
 ;;; Query results:
 (and (salary (Tweakit Lem E) 25000) (salary (Bitdiddle Ben) 60000) (replace (Tweakit Lem E) (Bitdiddle Ben)) (lisp-value < 25000 60000))
@@ -35,4 +35,7 @@
 (and (salary (Hacker Alyssa P) 40000) (salary (Bitdiddle Ben) 60000) (replace (Hacker Alyssa P) (Bitdiddle Ben)) (lisp-value < 40000 60000))
 
 ;; Benを解雇しろ！
+;; => ごめんBen違うぽい. 逆やな. replace逆で再度実行.
+(and (salary (Aull DeWitt) 25000) (salary (Warbucks Oliver) 150000) (replace (Warbucks Oliver) (Aull DeWitt)) (lisp-value < 25000 150000))
+(and (salary (Fect Cy D) 35000) (salary (Hacker Alyssa P) 40000) (replace (Hacker Alyssa P) (Fect Cy D)) (lisp-value < 35000 40000))
 
