@@ -1,5 +1,5 @@
 (load "./sec4.4-Serendip")
-;(query-driver-loop)
+(query-driver-loop)
 
 ;; reverse演算を実装せよ.
 ;; 想定される使い方
@@ -19,4 +19,14 @@
 
 ;; 動いた.
 ;; が, これだと (reverse (1 2 3) ?x) しか対応できない.
+;; この段階の(テキスト上想定してる)実装力では, それでいいらしい.
+
+;; 解答例(動かない...)
+;(assert! (rule (reverse () ()))) ??
+(assert! (rule (reverse ?x ?y)
+               (and
+                 (append-to-form (?car) ?cdr ?x)
+                 (append-to-form ?rev-cdr (?car) ?y)
+                 (reverse ?cdr ?rev-cdr))))
+
 

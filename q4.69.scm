@@ -34,7 +34,6 @@
 ;; 使ってみる ;;
 ;;; Query input:
 ((great grandson) ?g ?ggs)
-
 ;;; Query results:
 ((great grandson) Mehujael Jubal)
 ((great grandson) Irad Lamech)
@@ -46,7 +45,6 @@
 
 ;;; Query input:
 (?relationship Adam Irad)
-
 ;;; Query results:
 ((great grandson) Adam Irad)
 ((great great . son) Adam Irad)
@@ -54,3 +52,12 @@
 ((great great . son-of) Adam Irad)
 ;; 言い方が違うだけの結果が複数.
 
+
+;; もっと長いの見つけてみる
+;;; Query input:
+((great great great grandson) ?g ?ggggs)
+;;; Query results:
+((great great great grandson) Enoch Jubal)
+((great great great grandson) Cain Lamech)
+((great great great grandson) Enoch Jabal)
+((great great great grandson) Adam Methushael)
