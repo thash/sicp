@@ -149,3 +149,8 @@
 ;; 合成質問の処理は遅い. andは言う程でもないけど.
 ;; not節がややこしい. フィルタをかける順序を考えないと.
 
+;; 質問評価器と駆動ループ
+(assert! (rule (wheel ?person)
+               (and (supervisor ?middle-manager ?person)
+                    (supervisor ?x ?middle-manager))))
+
