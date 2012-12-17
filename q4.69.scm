@@ -2,7 +2,7 @@
 ;; grandson(孫)のさらに一個下 great-grandson
 
 (load "./sec4.4-Serendip")
-;(query-driver-loop)
+(query-driver-loop)
 
 ;; q4.63.scm からのcopy {{{1
 (assert! (son Adam Cain))
