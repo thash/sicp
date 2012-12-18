@@ -168,6 +168,9 @@ y: futa
 (unify-match '(job (? x) (? y)) '(job (? z) (computer (? y))) the-empty-stream)
 ;; うまくうごかん
 
+;; 4.4.4.6 ストリーム演算
+(define (stream-flatmap proc s)
+  (flatten-stream (stream-map proc s)))
 
 ; ----------------------------------------------------------------------------------
 
