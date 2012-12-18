@@ -28,4 +28,8 @@
   'ok)
 
 
+THE-ASSERTIONS => ((job hoge))
+;; としていたのにここでassertionをconsすると
+THE-ASSERTIONS = ((job fuu) . (thunk (THE-ASSERTIONS)))
+; となってしまい, あとで THE-ASSERTIONSを評価しようとしてもhogeはどっかいっちゃう.
 
