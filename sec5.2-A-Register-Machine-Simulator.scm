@@ -97,6 +97,13 @@
           (if val
             (cadr val) ;; これで取れるということはどういう構造になってる?
             (error "Unknown register:" name))))
+      (define (execute)
+        (let ((insts (get-contents pc)))
+          (if (null? insts)
+            'done
+            (begin
+              ((instruction-execution-proc (car insts)))
+              (execute)))))
       (define (dispatch message)
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
@@ -113,6 +120,16 @@
       dispatch)))
 
 ;;; 以下, machineを使ういくつかの手続き.
+(define (start machine)
+  (machine 'start))
+(define (get-register-contents machine register-name)
+  (get-contents (get-register machine register-name)))
+(define (set-register-contents! machine register-name value)
+  (set-contents! (get-register machine register-name) value)
+  'done)
+(define (get-register machine reg-name)
+  ((machine 'get-register) reg-name))
+
 ;; assemble: machineモデルに格納すべき命令列をcontroller-textから抽出して返す.
 (define (assemble controller-text machine)
   (extract-labels controller-text ; [new] extract-labels
@@ -318,7 +335,11 @@
     (else
       (error "Unknown expression type -- ASSENBLE" exp))))
 
-;; tagged-list? は昔定義したのを持ってくる?
+;; tagged-list? は昔定義したのを持ってくる
+(define (tagged-list? exp tag)
+  (if (pair? exp)
+      (eq? (car exp) tag)
+      #f))
 (define (register-exp? exp) (tagged-list? exp 'reg))
 (define (register-exp-reg exp) (cadr exp))
 (define (constant-exp? exp) (tagged-list? exp 'const))
@@ -350,3 +371,24 @@
       (error "Unknown operation -- ASSEMBLE" symbol))))
 
 ;; => q5.9.scm, q5.10.scm, q5.11.scm, q5.12.scm, q5.13.scm
+
+
+;;; 動作テスト ;;;
+;    (define gcd-machine
+;      (make-machine
+;        '(a b t)
+;        (list (list 'rem remainder) (list '= =))
+;        '(test-b
+;           (test (op =) (reg b) (const 0))
+;           (branch (label gcd-done))
+;           (assign t (op rem) (reg a) (reg b))
+;           (assign a (reg b))
+;           (assign b (reg t))
+;           (goto (label test-b))
+;        gcd-done)))
+
+;    gosh> (set-register-contents! gcd-machine 'a 206)
+;    gosh> (set-register-contents! gcd-machine 'b 40)
+;    gosh> (start gcd-machine)
+;    gosh> (get-register-contents gcd-machine 'a)
+;    2
