@@ -30,7 +30,10 @@
 (define (right-branch mobile)
   (cadr mobile))
 
-; このふたつ忘れてた...
+;; ひとつの枝は
+;;   * length
+;;   * structure = 単なる錘を表す数 or 別のモービル
+;; からなる.
 (define (branch-length branch)
   (car branch))
 (define (branch-structure branch)
