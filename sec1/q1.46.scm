@@ -23,3 +23,13 @@
 
 (exact->inexact (sqrt 9))
 
+;; fixed-point, iterative-improve version.
+;; ... or, you can set lambdas directly as args of iterative-improve.
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+  (define (improve guess)
+    (f guess))
+  (iterative-improve close-enough? improve) first-guess)
+
