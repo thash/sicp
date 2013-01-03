@@ -33,6 +33,9 @@
 ; listのlistから1つのlistを作るflatmap.
 (define (flatmap proc seq)
   (accumulate append () (map proc seq)))
+;; procの使い所が今ひとつ...
+; gosh> (flatmap + (list (list 3 4) (list 1 2)))
+; (3 4 1 2)
 
 ; 対の和が素数になるものを発見するfilter
 (define (prime-sum? pair)
