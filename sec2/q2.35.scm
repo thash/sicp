@@ -10,20 +10,20 @@
 
 (define (count-leaves t)
   (accumulate
-    (lambda (leaves total) (+ leaves total)) ; “K—poperation‚Ítotal‚Ö‚Ì‘«‚µ‡‚í‚¹
-    0 ; ‰Šú—t‚Ì”‚Í0
-    (map (lambda (sub-tree) ; accumulate‚Ésequence‚Æ‚µ‚Ä“n‚·‚Ì‚ÍAt‚É‘Î‚µ‚Ämap‚Åcount-leaves‚µ‚½‚à‚Ì
+    (lambda (leaves total) (+ leaves total)) ; é©ç”¨operationã¯totalã¸ã®è¶³ã—åˆã‚ã›
+    0 ; åˆæœŸè‘‰ã®æ•°ã¯0
+    (map (lambda (sub-tree) ; accumulateã«sequenceã¨ã—ã¦æ¸¡ã™ã®ã¯ã€tã«å¯¾ã—ã¦mapã§count-leavesã—ãŸã‚‚ã®
            (if (pair? sub-tree)
                       (count-leaves sub-tree)
-                      1)) ; pair‚¶‚á‚È‚¯‚ê‚Î—t‚ğ1ŒÂƒJƒEƒ“ƒgƒAƒbƒv
+                      1)) ; pairã˜ã‚ƒãªã‘ã‚Œã°è‘‰ã‚’1å€‹ã‚«ã‚¦ãƒ³ãƒˆã‚¢ãƒƒãƒ—
            t)))
 
-; ‚¿‚å‚Á‚Æ— ‹Z‚Á‚Û‚¢•û–@‚à‚ ‚éB‚³‚Á‚«‚Ìflatten(‰¼)‚ğg‚Á‚Ä‚â‚éB
+; ã¡ã‚‡ã£ã¨è£æŠ€ã£ã½ã„æ–¹æ³•ã‚‚ã‚ã‚‹ã€‚ã•ã£ãã®flatten(ä»®)ã‚’ä½¿ã£ã¦ã‚„ã‚‹ã€‚
 (define (count-leaves2 t)
   (accumulate + 0 (map (lambda (x) 1) (enumulate-tree t))))
 
 
-; ‚¤‚Ü‚­‚¢‚©‚È‚¢B
+; ã†ã¾ãã„ã‹ãªã„ã€‚
 (define (count-leaves3 t)
   (accumulate + 0 (map (lambda (subtree)
                          (cond ((null? subtree) 0)
