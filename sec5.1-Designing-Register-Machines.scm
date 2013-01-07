@@ -5,6 +5,7 @@
 ;; いままで触れてきたのは既存のLisp実装の上でしかない. もっと深淵に潜る.
 ;; 伝統的な計算機(レジスタ計算機,レジスタマシン)でのステップごとの操作を使い, プロセスを記述する.
 ;; レジスタ(= 一組の記憶素子の内容を操作する命令)
+;; "要するにアセンブラみたいなのを書きます."
 
 ;;;   5.1 レジスタ計算機の設計
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -14,6 +15,11 @@
   (if (= b 0)
     a
     (gcd (remainder a b))))
+;; 覚えておくもの
+;;   a, b
+;; やること
+;;   (= b 0)
+;;   (remainder a b)
 
 ;; => q5.1.scm -- 反復的アルゴリズムを用いたfactorial(階乗)の計算
 
@@ -29,7 +35,7 @@
 (data-path
   (registers
     ((name a)
-     (buttons ((name a<-b) (source (register b)))))
+     (buttons ((name a<-b) (source (register b))))) ; 図でマルの中にバツがあるものは"button"のつもりらしい
     ((name b)
      (buttons ((name b<-t) (source (register t)))))
     ((name t)
@@ -76,6 +82,8 @@
 ;;; ------------------------------- ;;;
 ;;; 結果を印字させてみる ;;;
 ;; 印字命令perform + printは基本演算として使用可能と仮定.
+;;   read  どこからともなく入力された値をレジスタに格納
+;;   print レジスタの値をここではないどこかへ出力
 ;; 未知: perform
 (controller
   gcd-loop
@@ -122,6 +130,95 @@
 ;; assign命令を拡張して命令列からラベルを値として(特別な定数として)レジスタに代入できるようにする
 ;; 感想: https://twitter.com/T_Hash/status/287257779998175233
 
+;; 2箇所から使う場合, labelを用意して別々のgcdを書けばいい
+;;; 図5.7 二つのGCD計算を持つ計算機のデータパスと制御器命令列の一部 ;;;
+gcd-1
+(test (op =) (reg b) (const 0))
+(branch (label after-gcd-1))
+(assign t (op rem) (reg a) (reg b))
+(assign a (reg b))
+(assign b (reg t))
+(goto (label gcd-1))
+after-gcd-1
+...
+gcd-2
+(test (op =) (reg d) (const 0)) ; bではなく reg dを使っている.
+(branch (label after-gcd-2))
+(assign (s (op rem) (reg c) (reg d))) ; 他のレジスタも名前が違う.
+(assign c (reg d))
+(assign d (reg s))
+(goto (label gcd-2))
+after-gcd-2
+
+;; これのレジスタを共有させよう.
+;;; 図5.8 二つの異なるGCD計算に同じデータパス部品を使う計算機の制御器命令列の一部 ;;;
+gcd-1
+(test (op =) (reg b) (const 0))
+(branch (label after-gcd-1))
+(assign t (op rem) (reg a) (reg b))
+(assign a (reg b))
+(assign b (reg t))
+(goto (label gcd-1))
+after-gcd-1
+...
+gcd-2
+(test (op =) (reg b) (const 0)) ; gcd-1と同じレジスタ名. 以降も.
+(branch (label after-gcd-2))
+(assign t (op rem) (reg a) (reg b))
+(assign a (reg b))
+(assign b (reg t))
+(goto (label gcd-2))
+after-gcd-2
+
+;; ...けど, 呼び出し元が増えるとすぐ破綻. そこでcontinueを導入.
+;; まずはcontinueに0,1,2...という値を入れて区別する想定.
+;;; 図5.9 図5.8の重複命令列を避けるためcontinueレジスタを使う ;;;
+gcd
+(test (op =) (reg b ) (const 0))
+(branch (label gcd-done))
+(assign t (op rem) (reg a ) (reg b))
+(assign a (reg b))
+(assign b (reg t))
+(goto (label gcd))
+gcd-done
+(test (op = ) (reg continue) (const 0)) ; continue "0"のとき
+(branch (label after-gcd-1))
+(goto (label afterfib-n-2))
+...
+;; それを必要とする第一の場所から gcdへ分岐する前にcontinue regに0を置く
+(assign continue (const 0))
+(goto (label gcd))
+after-gcd-1
+...
+;; gcdの第二の使用の前に continue regに1を置く
+(assign continue (const 1))
+(goto (label gcd))
+after-gcd-2
+
+;; でもまあこれ解決になってないよね. gcd使う場所の数だけ数値をインクリメントするのかという
+;; => そこでcontinueにlabelを使えるようにする.
+;;; 図5.10 continueレジスタにラベルを代入すると図5.9に示した戦略を単純化,一般化できる ;;;
+gcd
+(test (op =) (reg b) (const 0))
+(branch (label gcd-done))
+(assign t (op rem) (reg a) (reg b))
+(assign a (reg b))
+(assign b (reg t))
+(goto (label gcd))
+gcd-done
+(goto (reg continue))
+...
+;; gcdを呼び出す前に, gcdから戻るべきラベルをcontinueに代入する
+(assign continue (label after-gcd-1))
+(goto (label gcd))
+after-gcd-1
+...
+;; gcdへの第二の呼び出しでは継続は異なる.
+(assign continue (label after-gcd-2))
+(goto (label gcd))
+after-gcd-2
+
+
 
 ;;;     5.1.4 再帰を実装するためのスタックの使用
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,6 +233,10 @@
 ;; 再帰
 ;;   layer1 -> layer2 ->  ... -> layerN
 ;;   answer = layer1 <- ... <- layerN
+;;
+;; ループフェイズは将来計算に使う値をスタックにがんがん詰んで行って,
+;; 中央で反転.
+;; 計算フェイズではスタックからどんどん取り出してレジスタを更新しまくる
 
 ;; 図5.11 再帰的階乗計算機
 ;; 未知: save, restore

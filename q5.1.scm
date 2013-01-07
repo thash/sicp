@@ -38,3 +38,6 @@
 ;;
 ;; data path
 ;; https://www.evernote.com/shard/s11/sh/74232726-9de7-43e3-831f-3d9f1cedcc3d/2495a826423ac22ba621d19aa8546dc2
+;;
+;; GCDは変数を入れ替える必要があったので中間変数tを使ったけど,
+;; factorialの場合は まずp,のちにc という計算の順序さえ気をつければt不要.
