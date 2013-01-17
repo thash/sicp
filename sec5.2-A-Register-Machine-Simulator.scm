@@ -13,19 +13,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; machine
-;; machineはdispatchでコマンド渡してOOP的に動かす3章のアレのようだ.
+;; Machine.new的な. 最後にmachineを返す.
+;; machineはdispatchでコマンド渡してOOP的に動かす3章のアレ.
 ;; 未知: make-new-machine, assemble
 (define (make-machine register-names ops controller-text)
-  (let ((machine (make-new-machine)))
+  (let ((machine (make-new-machine))) ; basicなmachineを作成
+    ;; for-eachはリストの要素に手続きを順番に作用させる(mapに対するeach).
     (for-each (lambda (register-name)
-      ((machine 'allocate-register) register-name))
-              register-names)
+      ((machine 'allocate-register) register-name)) ; ここまでproc
+              register-names) ; procに渡すlist
     ((machine 'install-operations) ops)
     ((machine 'install-instruction-sequence)
      (assemble controller-text machine))
     machine))
 
 ;;; register
+;; contentsに対するget/setを内包した変数
 (define (make-register name)
   (let ((contents '*unassigned*))
     (define (dispatch message)
@@ -46,21 +49,26 @@
 ;;; stack
 ;; 局所状態を持つ手続きとして表現できる.
 (define (make-stack)
+  ;; 捜査対象はまず空リスト
   (let ((s '()))
+    ;; push: リストの先頭にくっつける
     (define (push x)
       (set! s (cons x s)))
+    ;; pop: リストはcdrに更新しつつ, carを返す
     (define (pop)
       (if (null? s)
         (error "Enpty stack -- POP")
         (let ((top (car s)))
           (set! s (cdr s))
           top)))
+    ;; リストを初期化する.
     (define (initialize)
       (set! s '())
       'done)
     (define (dispatch message)
       (cond ((eq? message 'push) push)
-            ((eq? message 'pop) (pop)) ;; popの時は()で囲う訳は?
+            ((eq? message 'pop) (pop))
+            ((eq? message 'initialize) (initialize))
             (else (error "Unknown request -- STACK"
                          message))))
     dispatch))
@@ -71,7 +79,7 @@
 
 ;;; 基本計算機
 ;; make-new-machine 手続きは, machine オブジェクトを作成する.
-;; machine は局所状態としてregister table (初期値はflagとpc(= program cunter))を持つ.
+;; machine は局所状態としてregister table (初期registerはflagとpc(= program counter))を持つ.
 ;; machine は局所状態として演算リスト, 空の命令列なども持つ.
 (define (make-new-machine)
   (let ((pc (make-register 'pc))
@@ -80,78 +88,112 @@
         (the-instruction-sequence '()))
     ;; the-opsの定義にstackを, register-tableの定義にpc,flagを使うため二重let.
     ;; Gaucheにはlet*というのがあるが.
-    (let ((the-ops
-            (list (list 'initialize-stack
-                        (lambda () (stack 'initialize)))))
-          (register-table
-            (list (list 'pc pc) (list 'flag flag))))
+    (let
+      ;; 空の演算リスト. デフォルトでmachineの持つstackを初期化する演算のみ定義
+      ;; [[op1, lambda1], [op2, lambda2]...]
+      ((the-ops
+         (list (list 'initialize-stack
+                     (lambda () (stack 'initialize)))))
+       ;; pc, flagのみ入ったregister table.
+       ;; [[regname1, register1], [regname2, register2], ...]
+       (register-table
+         (list (list 'pc pc) (list 'flag flag))))
+
+      ;; 指定された名前でregisterを新規作成, machineのregister tableに登録
       (define (allocate-register name)
         (if (assoc name register-table)
-          (error "Multiply defined register: " name)
-          (set! register-table
+          (error "Multiply defined register: " name) ; 既にその名のregisterがあれば
+          (set! register-table ; keyとしてのnameとregister本体のlistを先頭にくっつける
             (cons (list name (make-register name))
                   register-table)))
         'register-allocated)
+
       (define (lookup-register name)
-        (let ((val (assoc name register-table)))
-          (if val
-            (cadr val) ;; これで取れるということはどういう構造になってる?
+        (let ((val (assoc name register-table))) ; table形: (('regname register) ...)
+          (if val ; val は#fもしくは('regname register)というリストが入っている
+            (cadr val) ; registerを返す
             (error "Unknown register:" name))))
+
       (define (execute)
+        ;; get-contentsはregisterに'get messageを送り, registerの値を得る
         (let ((insts (get-contents pc)))
           (if (null? insts)
             'done
             (begin
+              ;; instruction-execution-procはただのcdr.
+              ;; pcレジスタに書くのされるデータ構造がわからないと何とも言えない
               ((instruction-execution-proc (car insts)))
-              (execute)))))
+              (execute))))) ;; instsがnullになるまで再帰.
+
+      ;; register操作, stack取り出しなどの実行を指示される.
       (define (dispatch message)
+        ;; startより先に2行下のinstall-instruction-sequenceを実行.
+        ;; さもないとpcに何も入らなさそう
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
                (execute))
+              ;; 引数をthe-instruction-sequence, 後のpc初期値へsetするよ
               ((eq? message 'install-instruction-sequence)
                (lambda (seq) (set! the-instruction-sequence seq)))
               ((eq? message 'allocate-register) allocate-register)
               ((eq? message 'get-register) lookup-register)
+              ;; the-opsにはデフォルトのinitializeだけ入ってるので, 初期化だけどappendで
               ((eq? message 'install-operations)
                (lambda (ops) (set! the-ops (append the-ops ops))))
-              ((eq? message 'stack) stack)
-              ((eq? message 'operations) the-ops)
+              ((eq? message 'stack) stack) ; 局所変数stackを取り出す
+              ((eq? message 'operations) the-ops) ; 局所変数the-opsを取り出す
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
 
-;;; 以下, machineを使ういくつかの手続き.
+
 (define (start machine)
   (machine 'start))
+;; machineから一足飛びにregisterの中身を取り出すショートカット
 (define (get-register-contents machine register-name)
   (get-contents (get-register machine register-name)))
+;; 同, set版
 (define (set-register-contents! machine register-name value)
   (set-contents! (get-register machine register-name) value)
   'done)
 (define (get-register machine reg-name)
   ((machine 'get-register) reg-name))
 
+
+;;;     5.2.2 アセンブラ
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; assemble: machineモデルに格納すべき命令列をcontroller-textから抽出して返す.
+;; make-machine内で最後の仕上げに使われている.
 (define (assemble controller-text machine)
   (extract-labels controller-text ; [new] extract-labels
                   (lambda (insts labels)
                     (update-insts! insts labels machine) ; [new] update-insts!
                     insts)))
 
+;; 渡されたcontroller-textから最初の命令リストとラベル表を構築する
+;; "textの要素を順に走査し, instsとlabelsを蓄積する."
 (define (extract-labels text receive)
   (if (null? text)
     (receive '() '())
     (extract-labels (cdr text)
+                    ;; receiveにはtextを処理する手続きが渡される.
+                    ;; 引数insts: それぞれがtextの命令を含んでいる命令のデータ構造のリスト
+                    ;; 引数labels: textの各ラベルを, リストinsts内のラベルが指示している位置と対応付ける表
                     (lambda (insts labels)
                       (let ((next-inst (car text)))
                         (if (symbol? next-inst)
+                          ;; "要素が記号(つまりラベル)の時は, 適切な入り口(?)をlabels表に追加する."
                           (receive insts
                                    (cons (make-label-entry next-inst ; [new] make-label-entry
                                                            insts)
                                          labels))
+                          ;; "それ以外の要素はinstsリストに追加する."
                           (receive (cons (make-instruction next-inst) ; [new] make-instruction
                                          insts)
                                    labels)))))))
 
+;; instsに実行手続きを入れ更新して返す.
+;;
 (define (update-insts! insts labels machine)
   (let ((pc (get-register machine 'pc))
         (flag (get-register machine 'flag))
@@ -159,13 +201,16 @@
         (ops (machine 'operations)))
     (for-each
       (lambda (inst)
-        (set-instruction-execution-proc! ; [new]
+        (set-instruction-execution-proc! ; [new] -- instsのcdrにprocをset!する
           inst
           (make-execution-procedure ; [new]
             (instruction-text inst) labels machine ; [new] instruction-text
             pc flag stack ops)))
       insts)))
 
+;; "機械命令データ構造" を作る. (命令文書 . 実行手続き) の対.
+;; 実行手続きの部分は最初何もないが, update-insts!で挿入される.
+;; ただ動かすだけなら命令文書を保持しておく必要はないが, わかりやすいので持ち回る
 (define (make-instruction text)
   (cons text '()))
 (define (instruction-text inst)
