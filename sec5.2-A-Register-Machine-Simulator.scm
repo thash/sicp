@@ -13,7 +13,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; machine
-;; Machine.new的な. 最後にmachineを返す.
+;; make-machineでは以下のことが行われる(Machine.new?)
+;;   1. make-new-machine で裸のmachineを作る
+;;   2. allocate-registerによって第一引数のregister-namesをmachineのregister-tableに登録
+;;   3. install-operationsによって第二引数のopsをmachineのthe-opsに登録
+;;   4. install-instruction-sequenceで第三引数の計算器文書本体をassemble(本体はextract-labels)走査, label一覧を保持し, 同時に命令列もmachine内に持つ.
+;;   5. 以上の処理を行った実行可能なmachineを返す
+
 ;; machineはdispatchでコマンド渡してOOP的に動かす3章のアレ.
 ;; 未知: make-new-machine, assemble
 (define (make-machine register-names ops controller-text)
@@ -23,7 +29,7 @@
       ((machine 'allocate-register) register-name)) ; ここまでproc
               register-names) ; procに渡すlist
     ((machine 'install-operations) ops)
-    ((machine 'install-instruction-sequence)
+    ((machine 'install-instruction-sequence) ; make-new-machineで作ったmachineにはtextが入ってない
      (assemble controller-text machine))
     machine))
 
@@ -116,6 +122,7 @@
 
       (define (execute)
         ;; get-contentsはregisterに'get messageを送り, registerの値を得る
+        ;; cond eq? message のstart内で, execute直前にpcへthe-instruction-sequenceがsetされている
         (let ((insts (get-contents pc)))
           (if (null? insts)
             'done
@@ -132,7 +139,7 @@
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
                (execute))
-              ;; 引数をthe-instruction-sequence, 後のpc初期値へsetするよ
+              ;; 引数をthe-instruction-sequence, 後のpc初期値へsetする
               ((eq? message 'install-instruction-sequence)
                (lambda (seq) (set! the-instruction-sequence seq)))
               ((eq? message 'allocate-register) allocate-register)
@@ -161,6 +168,10 @@
 
 ;;;     5.2.2 アセンブラ
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; > 命令実行手続きを生成する前に, アセンブラはすべてのラベルが何を参照するか知らなければならない.
+;; > そこでラベルを実行手続きから分離するため, 制御器の文書の走査から始める.
+;; > 文書を走査しながら, 命令のリストと, 各ラベルをリストの中へのポインタと対応づける表を構成する.
 
 ;; assemble: machineモデルに格納すべき命令列をcontroller-textから抽出して返す.
 ;; make-machine内で最後の仕上げに使われている.
@@ -175,14 +186,15 @@
 (define (extract-labels text receive)
   (if (null? text)
     (receive '() '())
-    (extract-labels (cdr text)
+    (extract-labels (cdr text) ; textを減らしながら再帰
                     ;; receiveにはtextを処理する手続きが渡される.
                     ;; 引数insts: それぞれがtextの命令を含んでいる命令のデータ構造のリスト
                     ;; 引数labels: textの各ラベルを, リストinsts内のラベルが指示している位置と対応付ける表
                     (lambda (insts labels)
                       (let ((next-inst (car text)))
+                        ;; このへんでinstsの内容をdisplayしてみると動きがわかる.
                         (if (symbol? next-inst)
-                          ;; "要素が記号(つまりラベル)の時は, 適切な入り口(?)をlabels表に追加する."
+                          ;; "要素が記号(つまりラベル)の時は, labels表にlabel名とその時点でのinsts(継続?)を追加する."
                           (receive insts
                                    (cons (make-label-entry next-inst ; [new] make-label-entry
                                                            insts)
@@ -193,7 +205,6 @@
                                    labels)))))))
 
 ;; instsに実行手続きを入れ更新して返す.
-;;
 (define (update-insts! insts labels machine)
   (let ((pc (get-register machine 'pc))
         (flag (get-register machine 'flag))
@@ -230,6 +241,10 @@
     (if val
       (cdr val)
       (error "Undefined label -- ASSENBLE" label-name))))
+
+;; 補足: assocの使い方
+; gosh> (assoc 'b '((a 1) (b 2) (b 3)))
+; (b 2) -- 同じkeyが複数あるときは最初のlistを返す
 
 ;; => q5.8.scm
 
