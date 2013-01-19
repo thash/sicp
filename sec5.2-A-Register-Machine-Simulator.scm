@@ -71,15 +71,18 @@
     (define (initialize)
       (set! s '())
       'done)
+    (define (show) s) ; my
     (define (dispatch message)
       (cond ((eq? message 'push) push)
             ((eq? message 'pop) (pop))
+            ((eq? message 'show) (show)) ; my
             ((eq? message 'initialize) (initialize))
             (else (error "Unknown request -- STACK"
                          message))))
     dispatch))
 
 (define (pop stack) (stack 'pop))
+(define (show stack) (stack 'show)) ; my
 (define (push stack value) ((stack 'push) value))
 
 
@@ -272,8 +275,20 @@
          (make-restore inst machine stack pc)) ; [new] make-restore
         ((eq? (car inst) 'perform)
          (make-perform inst machine labels ops pc)) ; [new] make-perform
+        ((eq? (car inst) 'show-stack) ; my
+         (make-show-stack stack pc))
         (else (error "Unknown instruction type -- ASSENBLE"
                      inst))))
+
+;; my
+(define (make-show-stack stack pc)
+  (lambda ()
+    (display "\nstack :: ")
+    (display (show stack))
+    (display "\n\nnext -> ")
+    (display (caar (cdr (get-contents pc))))
+    (display "\n---------\n")
+    (advance-pc pc)))
 
 ;;; assign命令に対する実行手続き ;;;
 (define (make-assign inst machine labels operations pc)
