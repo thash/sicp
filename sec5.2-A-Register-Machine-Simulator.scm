@@ -250,7 +250,12 @@
 
 ;;;     5.2.3 命令の実行手続きの生成
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; assembleの呼び出すextract-labelsは手続きを引数に取る.
+;; その際渡す手続きはupdate-insts!を含み, update-insts!内では
+;; make-execution-procedureの実行結果でinstを上書きしていく.
+
 ;; 4.1.7のanalyze同様, 命令の型に従って処理を振り分ける.
+;; make-* は手続きを返す.
 (define (make-execution-procedure inst labels machine
                                   pc flag stack ops)
   (cond ((eq? (car inst) 'assign)
@@ -272,16 +277,23 @@
 
 ;;; assign命令に対する実行手続き ;;;
 (define (make-assign inst machine labels operations pc)
+  ;; target: まず更新対象のregisterを取得
+  ;; value-exp: 呼び出し時点でのinstの内容例 => (assign b (const 1))
+  ;;            assign-value-expは単なるcddrなので (const 1) が格納される.
   (let ((target
           (get-register machine (assign-reg-name inst))) ; [new] assign-reg-name
         (value-exp (assign-value-exp inst))) ; [new] assign-value-exp
     (let ((value-proc
             (if (operation-exp? value-exp) ; [new] operation-exp?
-              (make-operation-exp ; [new] => さらに下
+              ;; (op xxx)という形であれば対応するoperation(登録されているはず)を引張り出し,
+              ;; 実行可能なlambdaにしてvalue-procへ束縛
+              (make-operation-exp ; [new]
                 value-exp machine labels operations)
-              (make-primitive-exp ; [new] => ちょっと下
+              ;; opでなければprimitive-exp(const, reg, label)と想定.
+              (make-primitive-exp ; [new]
                 (car value-exp) machine labels))))
       (lambda ()
+        ;; target(register)にoperation内容lambda or primitive-exp(これもlambda)をset
         (set-contents! target (value-proc))
         (advance-pc pc))))) ; [new] advance-pc
 
@@ -291,6 +303,8 @@
 (define (assign-value-exp assign-instruction)
   (cddr assign-instruction))
 
+;; pcの内容をcdrで上書きすることで, pcを次へ進める.
+;; branchとgotoを除くすべてのmake-*手続はadvance-pcで終了する.
 (define (advance-pc pc)
   (set-contents! pc (cdr (get-contents pc))))
 
@@ -303,10 +317,13 @@
               (make-operation-exp
                 condition machine labels operations)))
         (lambda ()
+          ;; condition部分を実行した結果をflag(register)に格納
           (set-contents! flag (condition-proc))
           (advance-pc pc)))
+      ;; test内容はoperationでないとエラー
       (error "Bad TEST instruction -- ASSENBLE" inst))))
 
+;; (test ...) の...部分(condition)を取得
 (define (test-condition test-instruction)
   (cdr test-instruction))
 
@@ -315,17 +332,26 @@
   (let ((dest (branch-dest inst))) ; [new] branch-dest
     (if (label-exp? dest) ; [new] label-exp?
       (let ((insts
+              ;; label-exp-labelはただのcadrなのでラベル名を返す.
+              ;; lookup-labelはlabels tableから名前で引いたvalueを返す. valueはそこの継続.
               (lookup-label labels (label-exp-label dest)))) ; [new] label-exp-label
         (lambda ()
+          ;; flag registerにはtestでoperationの結果が格納されている.
+          ;; flag真偽に応じて, pc(次に実行するテキスト)へlabels格納valueのinstsをsetするか,
+          ;; 普段通りadvanceさせるかを分岐させている.
+          ;; これ先に判定させたほうが微妙に効率よくない？ 特にlabelが多い時.
           (if (get-contents flag)
             (set-contents! pc insts)
             (advance-pc pc))))
+      ;; branch引数に(label ...)以外が来るとエラー
       (error "Bad BRANCH instruction -- ASSENBLE" inst))))
 
+;; (branch (label gcd-done)) => (label gcd-done)
 (define (branch-dest branch-instruction)
   (cadr branch-instruction))
 
 ;;; goto命令に対する実行手続き ;;;
+;; 上記branchの内容から, gotoの実体はlabelのvalによるpcの上書きであると予測できる.
 (define (make-goto inst machine labels pc)
   (let ((dest (goto-dest inst))) ; [new] goto-dest
     (cond ((label-exp? dest)
@@ -347,23 +373,31 @@
 
 
 ;;; その他(save, restore, perform)の命令に対する実行手続き ;;;
+;; save対象のregister値をstackへpushし, advance-pcする.
+;; instには(save continue)などが入ってくる
 (define (make-save inst machine stack pc)
+  ;; stack-inst-reg-nameは単なるcadrで, (save continue) からcontinueという名前を得る.
+  ;; save対象はregisterなので, get-registerでregister本体を取り出しregに束縛.
   (let ((reg (get-register machine
                            (stack-inst-reg-name inst)))) ; [new]
     (lambda ()
-      (push stack (get-contents reg))
+      (push stack (get-contents reg)) ;; 実行時点でのregの内容をstackへpush
       (advance-pc pc))))
 
+;; instには(restore continue)などが入ってくる
+;; stackは順々にpush/popするだけでregisterの不整合(nへcontinueの内容をset等)は見ていないため,
+;; saveとrestoreを対称的に使うように気をつける必要がある?
 (define (make-restore inst machine stack pc)
   (let ((reg (get-register machine
                            (stack-inst-reg-name inst))))
     (lambda ()
-      (set-contents! reg (pop stack))
+      (set-contents! reg (pop stack)) ; stackからpopした値でregisterを更新
       (advance-pc pc))))
 
 (define (stack-inst-reg-name stack-instruction)
   (cadr stack-instruction))
 
+;; performはprintなど返り値を必要としないoperationに対して使われる.
 (define (make-perform inst machine labels operations pc)
   (let ((action (perform-action inst))) ; [new] perform-action
     (if (operation-exp? action)
@@ -371,6 +405,7 @@
               (make-operation-exp
                 action machine labels operations)))
         (lambda ()
+          ;; 実行してpcを進めるだけ
           (action-proc)
           (advance-pc pc)))
       (error "Bad PERFORM instruction -- ASSEMBLE" inst))))
@@ -379,16 +414,22 @@
 
 
 ;;; 部分式の実行手続き ;;;
+;; const, reg, labelが基本手続きとして定義されている
 (define (make-primitive-exp exp machine labels)
   (cond ((constant-exp? exp); [new]
+         ;; (constant 1)などの場合. 単に1を返すだけのlambdaを返す.
          (let ((c (constant-exp-value exp))) ; [new] constant-exp-value
            (lambda () c)))
         ((label-exp? exp)
+         ;; (label gcd-done)などの場合.
+         ;; labels tableからlabel名と対になっている該当instsを取得して返す.
          (let ((insts
                  (lookup-label labels
                                (label-exp-label exp))))
            (lambda () insts)))
         ((register-exp? exp)
+         ;; (reg n)などの場合.
+         ;; machineに入っているregisterから対象を見つけ, contentsを返すlambdaを返す
          (let ((r (get-register machine
                                 (register-exp-reg exp))))
            (lambda () (get-contents r))))
@@ -408,19 +449,24 @@
 (define (label-exp-label exp) (cadr exp))
 
 
+;; expは((op hoge) (reg a)...)という形(operation-exp?で#tになる形)で渡されてくる
 (define (make-operation-exp exp machine labels operations)
   (let ((op (lookup-prim (operation-exp-op exp) operations)) ; [new] lookup-prim, operation-exp-op
         (aprocs
+          ;; 引数リストに対しmake-primitive-expをmapした結果をapecsに束縛.
           (map (lambda (e)
             (make-primitive-exp e machine labels))
                (operation-exp-operands exp)))) ; [new] operation-exp-operands
     (lambda ()
       (apply op (map (lambda (p) (p)) aprocs)))))
 
+;; expに入ってくるのは((op =) (reg b) (const 0)) や ((reg b)) など
 (define (operation-exp? exp)
   (and (pair? exp) (tagged-list? (car exp) 'op)))
+;; operationのsymbolを取り出す (operation-exp-op '((op =) (reg b) (const 0))) => =
 (define (operation-exp-op operation-exp)
   (cadr (car operation-exp)))
+;; operationの引数リストを取り出す. 上の例だと ((reg b) (const 0))
 (define (operation-exp-operands operation-exp)
   (cdr operation-exp))
 
