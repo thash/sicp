@@ -402,6 +402,7 @@
 ;; instには(restore continue)などが入ってくる
 ;; stackは順々にpush/popするだけでregisterの不整合(nへcontinueの内容をset等)は見ていないため,
 ;; saveとrestoreを対称的に使うように気をつける必要がある?
+;;  => この話題が q5.11.scm で触れられている.
 (define (make-restore inst machine stack pc)
   (let ((reg (get-register machine
                            (stack-inst-reg-name inst))))

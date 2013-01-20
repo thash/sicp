@@ -264,6 +264,7 @@ after-gcd-2
   fact-done)
 
 
+;; 図5.12 Fibonacci数を計算する計算機の制御器
 ;; さらにfibの計算は二重再帰が必要
 (controller
   (assign continue (label fib-done))
