@@ -215,6 +215,8 @@
         (ops (machine 'operations)))
     (for-each
       (lambda (inst)
+        ;; inst例: ((assign t (op rem) (reg a) (reg b)))
+        ;; labelは入ってこない
         (set-instruction-execution-proc! ; [new] -- instsのcdrにprocをset!する
           inst
           (make-execution-procedure ; [new]
