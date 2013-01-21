@@ -63,7 +63,7 @@
 
         (if (eq? (car (instruction-text inst)) 'assign)
           ;; assignした時のregister nameをkeyとしてassocで検索
-          (let ((record (assoc (cadr (instruction-text inst)))))
+          (let ((record (assoc (cadr (instruction-text inst)) info-reg-sources)))
             (if record ;; 既に存在すればsourceを追加
               (set-cdr! record (cons (caddr (instruction-text inst)) ;; TODO
                                      (cdr record)))
