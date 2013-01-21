@@ -191,3 +191,48 @@
       ((machine 'install-info) (cdr assemble-result)))
     ;;; <<< 変更
     machine))
+
+;;; 動作テスト
+;(define fib-machine-5.12
+;  (make-machine
+;    '(n val continue)
+;    (list (list '< <) (list '+ +) (list '- -))
+;    '((assign continue (label fib-done))
+;      fib-loop
+;      (test (op <) (reg n) (const 2))
+;      (branch (label immediate-answer))
+;      (save continue)
+;      (assign continue (label afterfib-n-1))
+;      (save n)
+;      (assign n (op -) (reg n) (const 1))
+;      (goto (label fib-loop))
+;      afterfib-n-1
+;      (restore n)
+;      (restore continue)
+;      (assign n (op -) (reg n) (const 2))
+;      (save continue)
+;      (assign continue (label afterfib-n-2))
+;      (save val)
+;      (goto (label fib-loop))
+;      afterfib-n-2
+;      (assign n (reg val))
+;      (restore val)
+;      (restore continue)
+;      (assign val (op +) (reg val) (reg n))
+;      (goto (reg continue))
+;      immediate-answer
+;      (assign val (reg n))
+;      (goto (reg continue))
+;      fib-done)))
+
+; gosh> (info-dests fib-machine-5.12)
+; (continue fib-loop)
+;
+; gosh> (info-stacked-regs fib-machine-5.12)
+; (val n continue)
+;
+; gosh> (info-reg-sources fib-machine-5.12)
+; ((val (reg n) (op +)) (n (reg val) (op -) (op -)) (continue (label afterfib-n-2) (label afterfib-n-1) (label fib-done)))
+;
+; gosh> (info-insts fib-machine-5.12)
+; ((assign val (reg n)) (goto (reg continue)) (assign val (op +) (reg val) (reg n)) (restore val) (assign n (reg val)) (save val) (assign continue (label afterfib-n-2)) (assign n (op -) (reg n) (const 2)) (restore continue) (restore n) (goto (label fib-loop)) (assign n (op -) (reg n) (const 1)) (save n) (assign continue (label afterfib-n-1)) (save continue) (branch (label immediate-answer)) (test (op <) (reg n) (const 2)) (assign continue (label fib-done)))
