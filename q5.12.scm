@@ -158,6 +158,15 @@
               (else (error "Unknown request -- MACHINE" message))))
       dispatch)))
 
+(define (info-insts machine)
+  (machine 'get-instructions))
+(define (info-dests machine)
+  (machine 'get-destinations))
+(define (info-stacked-regs machine)
+  (machine 'get-stacked-regs))
+(define (info-reg-sources machine)
+  (machine 'get-reg-sources))
+
 
 ;; 4. assembleは更新されたinstsと同時にinfoも返すようにする
 (define (assemble controller-text machine)
