@@ -19,6 +19,7 @@
 ;;       6. make-machineでinstall-infoを実行し, infoをsetする
 
 ;; 呼び出し階層: make-machine > assemble > extract-labels > update-insts!
+;;                            > make-new-machine
 
 (define (unique lst)
   (cond ((null? lst) lst)
