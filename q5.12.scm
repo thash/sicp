@@ -79,13 +79,13 @@
           (make-execution-procedure
             (instruction-text inst) labels machine
             pc flag stack ops)))
-      insts))
+      insts)
 
   ;; return info lists (追加)
   (list (unique info-instructions)
         (unique info-destinations)
         (unique info-stacked-regs)
-        info-reg-sources))
+        info-reg-sources)))
 
 
 
