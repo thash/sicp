@@ -65,11 +65,11 @@
           ;; assignした時のregister nameをkeyとしてassocで検索
           (let ((record (assoc (cadr (car (instruction-text inst))))))
             (if record ;; 既に存在すればsourceを追加
-              (set-cdr! record (cons (caddr (car instruction-text inst)) ;; TODO
+              (set-cdr! record (cons (caddr (car (instruction-text inst))) ;; TODO
                                      (cdr record)))
               ;; 存在しない場合(register-name . (list...)) のような要素を新規作成
               (set! info-reg-sources (cons (cons (cadr (car (instruction-text inst)))
-                                                 (list (caddr (car instruction-text inst))))
+                                                 (list (caddr (car (instruction-text inst)))))
                                            info-reg-sources)))))
         ;;; <<< 追加
 
