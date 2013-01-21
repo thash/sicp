@@ -114,9 +114,10 @@
 ;;              http://d.hatena.ne.jp/rsakamot/20090723/1248328615
 ;; 変更を最小限にするにはmake-stack, make-save, make-restoreを変えれば事足りる(1)が良いと思ったのでこっちで.
 
-;; s = ((n . (1 2 3 4...) (continue . ((...) (...))))) みたいな構造.
+;; s = ((n . (1 2 3 4...)) (continue . ((...) (...))))) みたいな構造.
 
 ;; make-new-machineでregisterを登録する際に専用stackも一緒に作る.
+;; NEXT-LOOP: 別解として, 最初にsaveしようとした時に専用stackを作るというLazyな実装でもよい.
 (define (make-new-machine)
   ;;...
       (define (allocate-register name)

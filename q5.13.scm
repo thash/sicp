@@ -5,6 +5,8 @@
 ;; レジスタを参照する命令は assign, reg, save, restore の4つ
 ;; このうちregのみ, レジスタ名が引数部分に出てくることに注意
 
+;; NEXT-LOOP: 別解. update-insts!でallocateするのではなく, lookupで失敗したら登録するLazyな方法
+
 (define (make-machine ops controller-text) ;; register-names を引数から削除
   (let ((machine (make-new-machine)))
     ;; assemble内で割り当てるので必要なくなる
