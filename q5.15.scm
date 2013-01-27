@@ -42,7 +42,7 @@
               ;; DEBUG
               ;; (display (list 'executing:: (instruction-text (car insts))))
               ;; (newline)
-              (set! inst-count (+ 1 inst-count))
+              (set! inst-count (+ 1 inst-count)) ;; *ココ!*
               ((instruction-execution-proc (car insts)))
               (execute)))))
       (define (dispatch message)
