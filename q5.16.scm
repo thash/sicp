@@ -41,8 +41,8 @@
           (if (null? insts)
             'done
             (begin
-              (if trace-flag
-                (display (list 'executing:: (instruction-text (car insts)) "\n")))
+              (if trace-flag ; ++
+                (display (list 'executing:: (instruction-text (car insts)) "\n"))) ; ++
               (set! inst-count (+ 1 inst-count))
               ((instruction-execution-proc (car insts)))
               (execute)))))
