@@ -151,9 +151,11 @@
         (let ((insts (get-contents pc)))
           (if (null? insts)
             'done
-            (begin
-              ;; instruction-execution-procはただのcdr.
-              ;; pcレジスタに書くのされるデータ構造がわからないと何とも言えない
+            (begin ; ここでいろいろdisplayして調べた.
+              ;; instsにはそれ以降に実行されるすべての((命令文 . proc) ...)が格納されている
+              ;; (car insts) で"今回"実行する1個の(命令文 . proc)対を取り出す.
+              ;; instruction-execution-procはcdrなのでprocが得られ, procをその場で()で囲い, 実行.
+              ;; このproc内でpcがadvance(or goto)されるので, 次のexecuteで取り出されるinstsは1個進んでいる.
               ((instruction-execution-proc (car insts)))
               (execute))))) ;; instsがnullになるまで再帰.
 
