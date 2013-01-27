@@ -117,7 +117,8 @@
     ;; the-opsの定義にstackを, register-tableの定義にpc,flagを使うため二重let.
     ;; Gaucheにはlet*というのがあるが.
     (let
-      ;; 空の演算リスト. デフォルトでmachineの持つstackを初期化する演算のみ定義
+      ;; the-ops: 空の演算リスト. デフォルトでmachineのstack初期化演算と,
+      ;; stack統計情報描画演算のみ定義. (perform (op print-statistics)) で実行.
       ;; [[op1, lambda1], [op2, lambda2]...]
       ((the-ops
          (list (list 'initialize-stack
