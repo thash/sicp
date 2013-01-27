@@ -56,27 +56,46 @@
 ;; 局所状態を持つ手続きとして表現できる.
 (define (make-stack)
   ;; 捜査対象はまず空リスト
-  (let ((s '()))
+  (let ((s '())
+        (number-pushes 0)
+        (max-depth 0)
+        (current-depth 0))
     ;; push: リストの先頭にくっつける
     (define (push x)
-      (set! s (cons x s)))
+      (set! s (cons x s))
+      ;; push時にstack統計情報を更新する
+      (set! number-pushes (+ 1 number-pushes))
+      (set! current-depth (+ 1 current-depth))
+      (set! max-depth (max current-depth max-depth)))
     ;; pop: リストはcdrに更新しつつ, carを返す
     (define (pop)
       (if (null? s)
         (error "Enpty stack -- POP")
         (let ((top (car s)))
           (set! s (cdr s))
+          ;; stack深さを1減らす
+          (set! current-depth (- current-depth 1))
           top)))
     ;; リストを初期化する.
     (define (initialize)
       (set! s '())
+      (set! number-pushes 0)
+      (set! max-depth 0)
+      (set! current-depth 0)
       'done)
+    ;; 統計情報を表示する
+    (define (print-statistics)
+      (newline)
+      (display (list 'total-pushes '= number-pushes
+                     'maximum-depth '= max-depth)))
     (define (show) s) ; my
     (define (dispatch message)
       (cond ((eq? message 'push) push)
             ((eq? message 'pop) (pop))
             ((eq? message 'show) (show)) ; my
             ((eq? message 'initialize) (initialize))
+            ((eq? message 'print-statistics)
+             (print-statistics))
             (else (error "Unknown request -- STACK"
                          message))))
     dispatch))
@@ -102,7 +121,9 @@
       ;; [[op1, lambda1], [op2, lambda2]...]
       ((the-ops
          (list (list 'initialize-stack
-                     (lambda () (stack 'initialize)))))
+                     (lambda () (stack 'initialize)))
+               (list 'print-stack-statistics
+                     (lambda () (stack 'print-statistics)))))
        ;; pc, flagのみ入ったregister table.
        ;; [[regname1, register1], [regname2, register2], ...]
        (register-table
