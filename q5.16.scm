@@ -1,15 +1,18 @@
 ;; シミュレータに命令トレース(instruction tracing)が出来るように拡張せよ.
 ;; つまり各命令を実行する前に, シミュレータは命令の文字列を印字する. トレースを開始と停止する
 ;; trace-onとtrace-offメッセージを計算機モデルが受け入れるようにせよ.
+;; NEXT-LOOP: 出力時にregisterの状態も表示するようにするといい感じかも
 
 ;; q5.15.scm で半分済んでた. あとはon/offできるようにしてif文入れりゃいい
+;; trace-on/offをoperationとして追加.
+;; NEXT-LOOP: 問題文をよく読むとtrace-on/offは計算機モデルにmessage passingする方針を意図してたっぽい...
 (define (make-new-machine)
   (let ((pc (make-register 'pc))
         (flag (make-register 'flag))
         (stack (make-stack))
         (the-instruction-sequence '())
         (inst-count 0)
-        (trace-flag #f))
+        (trace-flag #f)) ; ++
     (let
       ((the-ops
          (list (list 'initialize-stack
@@ -20,8 +23,8 @@
                      (lambda () (set! inst-count 0)))
                (list 'print-inst-count
                      (lambda () (display (list 'inst-count '= inst-count)) (newline)))
-               (list 'trace-on  (lambda () (set! trace-flag #t)))
-               (list 'trace-off (lambda () (set! trace-flag #f))))) ;; trace-on/offをoperationとして追加
+               (list 'trace-on  (lambda () (set! trace-flag #t))) ; ++
+               (list 'trace-off (lambda () (set! trace-flag #f))))) ;; ++
        (register-table
          (list (list 'pc pc) (list 'flag flag))))
       (define (allocate-register name)

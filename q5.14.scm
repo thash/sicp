@@ -31,6 +31,7 @@
 ; gosh> (start fact-machine)
 ; (total-pushes = 2 maximum-depth = 2)done
 ;;; この調子でnを変えつつ出力を確認する
+;; 青山さん: "read"を使いnを対話的に受け付けるよう改造してた. いちいち作り直す必要がない.
 
 2 (total-pushes = 2 maximum-depth = 2)done
 3 (total-pushes = 4 maximum-depth = 4)done

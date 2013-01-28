@@ -4,6 +4,9 @@
 ;; 命令回数の値を印字し, 回数をゼロに設定するメッセージを受け入れるようにせよ.
 
 ;; make-new-machineに手を入れる. executeでinstsを実行する度にカウントを増やす.
+;; NEXT-LOOP: opとして定義するのではなくmachine自体がメッセージを受け入れるようにする別解も.
+;;            (たぶんそれだと命令文の途中で値を見ることが出来ないけど).
+;;            あとは, registerとして実装する方法もある.
 (define (make-new-machine)
   (let ((pc (make-register 'pc))
         (flag (make-register 'flag))
@@ -94,5 +97,6 @@
 ;; (total-pushes = 8 maximum-depth = 8)
 ;; (inst-count = 51)
 
+;; n = 10 -> 20で2桁増加.
 ;; performによるdebug命令もカウントされてしまうので注意.
 

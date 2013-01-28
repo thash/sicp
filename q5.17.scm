@@ -29,6 +29,8 @@
                           (receive (cons (make-instruction next-inst)
                                          insts)
                                    labels)))))))
+;; 既存実装はextract-labelsでlabelと命令を分けてる.
+;; それを, 命令の方にもlabelを残して, 切り替わった時に(labelを通過した時に)くっつけるようにする(?)
 
 ;; instsにlabelも入ってくるので処理をskipする
 (define (update-insts! insts labels machine)
