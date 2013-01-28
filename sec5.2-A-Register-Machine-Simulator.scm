@@ -525,6 +525,7 @@
 ;    (define gcd-machine
 ;      (make-machine
 ;        '(a b t)
+;        ; Quasiquote version:: `((rem ,remainder) (= ,=))
 ;        (list (list 'rem remainder) (list '= =))
 ;        '(test-b
 ;           (test (op =) (reg b) (const 0))
