@@ -21,7 +21,7 @@
                       (let ((next-inst (car text)))
                         (if (symbol? next-inst)
                           ;; (receive insts... を変更. instsを変更なしに次へ渡すのではなく,
-                          ;; label以外では(text . '(proc予定地))としているところを, (label . label-name)をくっつける.
+                          ;; label以外では(text . '(proc予定地))としているところに, (label . label-name)をくっつける.
                           (receive (cons (cons 'label next-inst) insts)
                                    (cons (make-label-entry next-inst
                                                            insts)
@@ -29,6 +29,46 @@
                           (receive (cons (make-instruction next-inst)
                                          insts)
                                    labels)))))))
+
+;; instsにlabelも入ってくるので処理をskipする
+(define (update-insts! insts labels machine)
+  (let ((pc (get-register machine 'pc))
+        (flag (get-register machine 'flag))
+        (stack (machine 'stack))
+        (ops (machine 'operations)))
+    (for-each
+      (lambda (inst)
+        (if (eq? (car inst) 'label) ; ++
+          'skip-label ; ++
+          (set-instruction-execution-proc!
+            inst
+            (make-execution-procedure
+              (instruction-text inst) labels machine
+              pc flag stack ops))))
+      insts)))
+
+
+(define (make-execution-procedure inst labels machine
+                                  pc flag stack ops)
+  (cond  ((symbol? (car inst)) inst) ; ++
+         ((eq? (car inst) 'assign)
+          (make-assign  inst machine labels ops pc))
+         ((eq? (car inst) 'test)
+          (make-test    inst machine labels ops flag pc))
+         ((eq? (car inst) 'branch)
+          (make-branch  inst machine labels flag pc))
+         ((eq? (car inst) 'goto)
+          (make-goto    inst machine labels pc))
+         ((eq? (car inst) 'save)
+          (make-save    inst machine stack pc))
+         ((eq? (car inst) 'restore)
+          (make-restore inst machine stack pc))
+         ((eq? (car inst) 'perform)
+          (make-perform inst machine labels ops pc))
+         ((eq? (car inst) 'show-stack)
+          (make-show-stack stack pc))
+         (else (error "Unknown instruction type -- ASSENBLE"
+                      inst))))
 
 
 (define (make-new-machine)
@@ -69,14 +109,25 @@
         (let ((insts (get-contents pc)))
           (if (null? insts)
             'done
+            ;; 変更>>> xxxだめ
             (begin
+              (display (caar insts))
               (newline)
-              (display (car insts))
-              (if trace-flag
-                (display (list 'executing:: (instruction-text (car insts)) "\n")))
-              (set! inst-count (+ 1 inst-count))
-              ((instruction-execution-proc (car insts)))
-              (execute)))))
+              (if (eq? (caar insts) 'label)
+                (begin
+                  (if trace-flag
+                    (begin (display (car insts)) (newline)))
+                  (advance-pc pc)
+                  (execute)))
+              (begin
+                ;(newline)
+                ;(display (car insts))
+                (if trace-flag
+                  (display (list 'executing:: (instruction-text (car insts)) "\n")))
+                (set! inst-count (+ 1 inst-count))
+                ((instruction-execution-proc (car insts)))
+                (execute)))))) ;; <<< 変更
+
       (define (dispatch message)
         (cond ((eq? message 'start)
                (set-contents! pc the-instruction-sequence)
@@ -99,12 +150,14 @@
     (list (list '- -) (list '= =) (list '* *))
     '((assign continue (label fact-done))
       fact-loop
+      (perform (op trace-on)) ; ++
       (test (op =) (reg n) (const 1))
       (branch (label base-case))
       (save continue)
       (save n)
       (assign n (op -) (reg n) (const 1))
       (assign continue (label after-fact))
+      (perform (op trace-off)) ; ++
       (goto (label fact-loop))
       after-fact
       (restore n)
@@ -117,4 +170,4 @@
       fact-done)))
 
 (set-register-contents! fact-machine 'n 4)
-;(start fact-machine)
+(start fact-machine)
