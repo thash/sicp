@@ -60,7 +60,7 @@ ev-application
 (save unev)
 (assign exp (op operator) (reg exp))
 (assign continue (label ev-appl-did-operator))
-(goto (reg eval-dispatch)) ; 最後のgotoがcontinueじゃない!
+(goto (label eval-dispatch)) ; 最後のgotoがcontinueじゃない!
 
 ev-appl-did-operator
 (restore unev) ; 被演算子
@@ -79,7 +79,7 @@ ev-appl-operand-loop
 (branch (label ev-appl-last-arg)) ; lyを省略することにどれほど意味があるのか
 (save env)
 (save unev)
-(assign continue (lavel ev-appl-accumulate-arg))
+(assign continue (label ev-appl-accumulate-arg))
 (goto (label eval-dispatch))
 
 ;; arglへ評価後の引数を蓄積.
@@ -183,7 +183,7 @@ ev-if
 (save continue)
 (assign continue (label ev-if-decide))
 (assign exp (op if-predicate) (reg exp))
-(goto (reg eval-dispatch)) ; continueではない
+(goto (label eval-dispatch)) ; continueではない
 ev-if-decide
 (restore continue)
 (restore env)
