@@ -1,9 +1,25 @@
 ;;;   5.4 積極制御評価器
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; レジスタ計算機本体
+(load "./sec5.2-A-Register-Machine-Simulator.scm")
+
+;; 4章の評価器
+(load "./sec4/sec4.1-The-Metacircular-Evaluator.scm")
+(define (announce-output) (annouce-output)) ; typoしてたｗ
+
+;; 4章では出て来なかったoperationsの定義
+;; (先に定義する必要があるのでここに置いた)
+(define (empty-arglist) '())
+(define (adjoin-arg arg arglist) (append arglist (list arg)))
+(define (last-operand? ops) (null? (cdr ops)))
+(define (no-more-exps? seq) (null? (cdr seq)))
+(define the-global-environment (setup-environment))
+(define (get-global-environment) the-global-environment)
+
 ;;;     5.4.1 積極制御評価器の中核
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(define all-text '(
 ;; 手続きはlabelのように表せる.
 ;; eval-dispatchは4章(sec4.1)のevalに相当.
 ;; copyしてきて記述をレジスタ計算機形式に変更
@@ -237,3 +253,119 @@ ev-definition-1
 
 ;; => q5.23.scm, q5.24.scm, q5.25.scm
 
+
+;;;     5.4.4 評価の実行
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+read-eval-print-loop
+(perform (op initialize-stack))
+(perform
+  (op prompt-for-input) (const ";;; EC-Eval input:"))
+(assign exp (op read)) ; 入力文字列をそのままexpと解釈
+(assign env (op get-global-environment))
+(assign continue (label print-result))
+(goto (label eval-dispatch))
+print-result
+(perform
+  (op announce-output) (const ";;; EC-Eval value:"))
+(perform (op user-print) (reg val))
+(goto (label read-eval-print-loop)) ; ずっとるーぷ
+
+;; エラー系
+unknown-expression-type
+(assign val (const unknown-expression-type-error))
+(goto (label signal-error))
+unknown-procedure-type
+(restore continue) ; clean up stack (from apply-dispatch)
+(assign val (const unknown-procedure-type-error))
+(goto (label signal-error))
+
+signal-error
+(perform (op user-print) (reg val))
+(goto (label read-eval-print-loop))
+
+)) ; end of all-text
+
+;; 動作テスト
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; opで使われるすべてを定義.
+;; 基本的に4.1で定義したものを流用できるのでloadかなんかする.
+;; あと脚注の手続きをちょっと追加 => いちばん上に配置.
+(define eceval-operations ; {{{2
+  `(
+    (adjoin-arg ,adjoin-arg)
+    (announce-output ,announce-output)
+    (application? ,application?)
+    (apply-primitive-procedure ,apply-primitive-procedure)
+    (assignment-value ,assignment-value)
+    (assignment-variable ,assignment-variable)
+    (assignment? ,assignment?)
+    (begin-actions ,begin-actions)
+    (begin? ,begin?)
+    (compound-procedure? ,compound-procedure?)
+    (define-variable! ,define-variable!)
+    (definition-value ,definition-value)
+    (definition-variable ,definition-variable)
+    (definition? ,definition?)
+    (empty-arglist ,empty-arglist)
+    (extend-environment ,extend-environment)
+    (first-exp ,first-exp)
+    (first-operand ,first-operand)
+    (get-global-environment ,get-global-environment)
+    (if-alternative ,if-alternative)
+    (if-consequent ,if-consequent)
+    (if-predicate ,if-predicate)
+    (if? ,if?)
+    (lambda-body ,lambda-body)
+    (lambda-parameters ,lambda-parameters)
+    (lambda? ,lambda?)
+    (last-exp? ,last-exp?)
+    (last-operand? ,last-operand?)
+    (lookup-variable-value ,lookup-variable-value)
+    (make-procedure ,make-procedure)
+    (no-more-exps? ,no-more-exps?)
+    (no-operands? ,no-operands?)
+    (operands ,operands)
+    (operator ,operator)
+    (primitive-procedure? ,primitive-procedure?)
+    (procedure-body ,procedure-body)
+    (procedure-environment ,procedure-environment)
+    (procedure-parameters ,procedure-parameters)
+    (prompt-for-input ,prompt-for-input)
+    (quoted? ,quoted?)
+    (read ,read)
+    (rest-exps ,rest-exps)
+    (rest-operands ,rest-operands)
+    (self-evaluating? ,self-evaluating?)
+    (set-variable-value! ,set-variable-value!)
+    (text-of-quotation ,text-of-quotation)
+    (true? ,true?)
+    (user-print ,user-print)
+    (variable? ,variable?)
+    )) ; }}}2
+
+
+;; レジスタ計算機を作る.
+(define eceval
+  (make-machine
+    '(exp env val proc argl continue unev)
+    eceval-operations
+    all-text ; ここにぜんぶぶっこむ
+    ))
+
+(define the-global-environment (setup-environment))
+; (start eceval)
+
+;; gosh> (start eceval)
+;; !!!Stack Trace:!!!
+;; !!!_______________________________________!!!
+;; !!!  0  (first-frame env)!!!
+;; !!!        At line 312 of "./sec4/sec4.1-The-Metacircular-Evaluator.scm"!!!
+;; !!!  1  value-proc!!!
+;; !!!!!!
+;; !!!  2  (set-contents! target (value-proc))!!!
+;; !!!        At line 338 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
+;; !!!  3  (instruction-execution-proc (car insts))!!!
+;; !!!        At line 159 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
+;; !!!!!!(start eceval)
