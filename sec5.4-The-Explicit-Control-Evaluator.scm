@@ -369,3 +369,17 @@ signal-error
 ;; !!!  3  (instruction-execution-proc (car insts))!!!
 ;; !!!        At line 159 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
 ;; !!!!!!(start eceval)
+
+;; 公式コードをloadしても同じなので, 4章の方が原因ではないようだ
+;; (define true #t)
+;; (define false #f)
+;; (load "./book/ch4-mceval")
+;; !!!Stack Trace:!!!
+;; !!!_______________________________________!!!
+;; !!!  0  (first-frame env)!!!
+;; !!!        At line 254 of "./book/ch4-mceval.scm"!!!
+;; !!!  1  value-proc!!!
+
+;; このへんをDEBUGする
+;; !!!        At line 338 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
+;; !!!        At line 159 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
