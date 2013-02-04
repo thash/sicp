@@ -156,6 +156,7 @@
               ;; (car insts) で"今回"実行する1個の(命令文 . proc)対を取り出す.
               ;; instruction-execution-procはcdrなのでprocが得られ, procをその場で()で囲い, 実行.
               ;; このproc内でpcがadvance(or goto)されるので, 次のexecuteで取り出されるinstsは1個進んでいる.
+              (print "(car insts): " (car insts))
               ((instruction-execution-proc (car insts)))
               (execute))))) ;; instsがnullになるまで再帰.
 
