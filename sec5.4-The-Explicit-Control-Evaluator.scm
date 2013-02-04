@@ -20,6 +20,24 @@
 ;;;     5.4.1 積極制御評価器の中核
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define all-text '(
+
+;;; 本文の順序とは異なるが, REPL部分を最初に持ってこないとenvが初期化されずエラる
+read-eval-print-loop
+(perform (op initialize-stack))
+(perform
+  (op prompt-for-input) (const ";;; EC-Eval input:"))
+(assign exp (op read)) ; 入力文字列をそのままexpと解釈
+(assign env (op get-global-environment))
+(assign continue (label print-result))
+(goto (label eval-dispatch))
+print-result
+(perform
+  (op announce-output) (const ";;; EC-Eval value:"))
+(perform (op user-print) (reg val))
+(goto (label read-eval-print-loop)) ; ずっとるーぷ
+
+;;; 以下本体スタート
+
 ;; 手続きはlabelのように表せる.
 ;; eval-dispatchは4章(sec4.1)のevalに相当.
 ;; copyしてきて記述をレジスタ計算機形式に変更
@@ -257,19 +275,20 @@ ev-definition-1
 ;;;     5.4.4 評価の実行
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-read-eval-print-loop
-(perform (op initialize-stack))
-(perform
-  (op prompt-for-input) (const ";;; EC-Eval input:"))
-(assign exp (op read)) ; 入力文字列をそのままexpと解釈
-(assign env (op get-global-environment))
-(assign continue (label print-result))
-(goto (label eval-dispatch))
-print-result
-(perform
-  (op announce-output) (const ";;; EC-Eval value:"))
-(perform (op user-print) (reg val))
-(goto (label read-eval-print-loop)) ; ずっとるーぷ
+;;; 本文中だとREPLはここに出てくるんだけど定義上は最初に持ってくる必要がある.
+;; read-eval-print-loop
+;; (perform (op initialize-stack))
+;; (perform
+;;   (op prompt-for-input) (const ";;; EC-Eval input:"))
+;; (assign exp (op read)) ; 入力文字列をそのままexpと解釈
+;; (assign env (op get-global-environment))
+;; (assign continue (label print-result))
+;; (goto (label eval-dispatch))
+;; print-result
+;; (perform
+;;   (op announce-output) (const ";;; EC-Eval value:"))
+;; (perform (op user-print) (reg val))
+;; (goto (label read-eval-print-loop)) ; ずっとるーぷ
 
 ;; エラー系
 unknown-expression-type
@@ -382,3 +401,9 @@ signal-error
 ;; このへんをDEBUGする
 ;; !!!        At line 338 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
 ;; !!!        At line 159 of "./sec5.2-A-Register-Machine-Simulator.scm"!!!
+
+;; 原因を発見: all-text内でread-eval-print-loopのまとまりを最初に持ってくる必要があった
+;; (本文そのままの順序ではenvが*unassigned*になり(first-frame env)がエラーを吐いてた)
+;; よく見ると本文もちゃっかりread-eval-print-loopから書き始めてる.
+
+;; 動いた！
