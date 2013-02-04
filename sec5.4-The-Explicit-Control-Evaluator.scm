@@ -6,7 +6,7 @@
 
 ;; 4章の評価器
 (load "./sec4/sec4.1-The-Metacircular-Evaluator.scm")
-(define (announce-output) (annouce-output)) ; typoしてたｗ
+(define (announce-output arg) (annouce-output arg)) ; typoしてたｗ
 
 ;; 4章では出て来なかったoperationsの定義
 ;; (先に定義する必要があるのでここに置いた)
@@ -354,7 +354,6 @@ signal-error
     all-text ; ここにぜんぶぶっこむ
     ))
 
-(define the-global-environment (setup-environment))
 ; (start eceval)
 
 ;; gosh> (start eceval)
