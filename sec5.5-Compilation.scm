@@ -83,8 +83,7 @@
          (make-instruction-sequence '(continue) '()
                                     '((goto (reg continue)))))
         ((eq? linkage 'next)
-         (make-instruction-sequence '() '()
-                                    (empty-instruction-sequence)))
+         (empty-instruction-sequence))
         (else
           (make-instruction-sequence '() '()
                                      `((goto (label ,linkage))))))) ; quasiquoteの利用
