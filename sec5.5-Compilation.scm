@@ -1,6 +1,8 @@
 ;;;   5.5 翻訳系(Compilation)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(load "./sec4/sec4.1-The-Metacircular-Evaluator.scm")
+
 ;; 高レベル言語とレジスタ計算機の間を橋渡しする方法はふたつある.
 ;;
 ;; 1. 解釈(interpretation, インタープリタ言語) -- 5.4の積極評価器計算機で使った戦略.
@@ -49,6 +51,7 @@
 ;;
 ;; まず単純に命令列を<seq1><seq2>とつなげるには
 ;;     (append-instruction-sequence <seq1> <seq2>)
+;;     ;; => 実装はp.352(sec5.5.4)
 ;; とすればいい. レジスタをstackに退避しつつ, という時はpreservingを使うのだが,
 ;;     (preserving (list <reg1> <reg2>) <seq1> <seq2>)
 ;; seq1,2がreg1,2を"どう使うか"により4通りの命令列を作ることになる.
@@ -175,7 +178,240 @@
     (string-append (symbol->string name)
                    (number->string (new-label-number)))))
 
-;; イマココ p.345
-; compile-lambda
-; compile-sequence
-; compile-application
+;; 並び(sequence)の翻訳
+(define (compile-sequence seq target linkage)
+  (if (last-exp? seq)
+    (compile (first-exp seq) target linkage)
+    (preserving '(env continue)
+                (compile (first-exp seq) target 'next)
+                (compile-sequence (rest-exps seq) target linkage))))
+
+;; lambda式の翻訳
+(define (compile-lambda exp target linkage)
+  (let ((proc-entry (make-label 'entry))
+        (after-lambda (make-label 'after-lambda)))
+    (let ((lambda-linkage
+            (if (eq? linkage 'next) after-lambda linkage)))
+      (append-instruction-sequence
+        (tack-on-instruction-sequence ; [new]
+          (end-with-linkage lambda-linkage
+                            (make-instruction-sequence '(env) (list target)
+                                                       `((assign ,target
+                                                                 (op make-compiled-procedure) ; [new]
+                                                                 (label ,proc-entry)
+                                                                 (reg env)))))
+          (compile-lambda-body exp proc-entry)) ; [new]
+        after-lambda))))
+
+(define (compile-lambda-body exp proc-entry)
+  (let ((formals (lambda-parameters exp)))
+    (append-instruction-sequence
+      (make-instruction-sequence '(env proc argl) '(env)
+                                 `(,proc-entry
+                                    (assign env (op compiled-procedure-env) (reg proc))
+                                    (assign env
+                                            (op extend-environment)
+                                            (const ,formals)
+                                            (reg argl)
+                                            (reg env))))
+      (compile-sequence (lambda-body exp) 'val 'return))))
+
+;; 脚注よりlambda翻訳の補助手続き
+(define (make-compiled-procedure entry env)
+  (list 'compiled-procedure entry env))
+(define (compiled-procedure? proc)
+  (tagged-list? proc 'compiled-procedure))
+(define (compiled-procedure-entry c-proc) (cadr c-proc))
+(define (compiled-procedure-env c-proc) (caddr c-proc))
+
+
+;;;     5.5.3 組み合わせの翻訳
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 翻訳処理の実質は, 手続き作用の翻訳である.
+(define (compile-application exp target linkage)
+  (let ((proc-code (compile (operator exp) 'proc 'next))
+        (operand-codes
+          (map (lambda (operand) (compile operand 'val 'next))
+               (operands exp))))
+    (preserving '(env continue)
+                proc-code
+                (preserving '(proc continue)
+                            (construct-arglist operand-codes) ; [new]
+                            (compile-procedure-call target linkage))))) ; [new]
+
+(define (construct-arglist operand-codes)
+  (let ((operand-codes (reverse operand-codes)))
+    (if (null? operand-codes)
+      (make-instruction-sequence '() '(argl)
+                                 `((assign argl (const ()))))
+      (let ((code-to-get-last-arg
+              (append-instruction-sequence
+                (car operand-codes)
+                (make-instruction-sequence '(val) '(argl)
+                                           `((assign argl (op list) (reg val)))))))
+        (if (null? (cdr operand-codes))
+          code-to-get-last-arg
+          (preserving '(env)
+                      code-to-get-last-arg
+                      (code-to-get-rest-args ; [new] 紛らわしい.
+                        (cdr operand-codes))))))))
+
+(define (code-to-get-rest-args operand-codes)
+  (let ((code-for-next-arg
+          (preserving '(argl)
+                      (car operand-codes)
+                      (make-instruction-sequence '(val argl) '(argl)
+                                                 `((assign argl
+                                                           (op cons) (reg val) (reg argl)))))))
+    (if (null? (cdr operand-codes))
+      code-for-next-arg
+      (preserving '(env)
+                  code-for-next-arg
+                  (code-to-get-rest-args (cdr operand-codes))))))
+
+;;; 手続きの作用
+;; 組み合わせの要素を翻訳したあと, 翻訳コードはprocにある手続きをarglにある引数に作用させなければならない.
+
+(define (compile-procedure-call target linkage)
+  (let ((primitive-branch (make-label 'primitive-branch))
+        (compiled-branch (make-label 'compiled-branch))
+        (after-call (make-label 'after-call)))
+    (let ((compiled-linkage
+            (if (eq? linkage 'next) after-call linkage)))
+      (append-instruction-sequence
+        (make-instruction-sequence '(proc) '()
+                                   `((test (op primitive-procedure?) (reg proc))
+                                     (branch (label ,primitive-branch))))
+        (parallel-instruction-sequence
+          (append-instruction-sequence
+            compiled-branch
+            (compile-proc-appl target compiled-linkage)) ; [new]
+          (append-instruction-sequence
+            primitive-branch
+            (end-with-linkage linkage
+                              (make-instruction-sequence '(proc argl)
+                                                         (list target)
+                                                         `((assign ,target
+                                                                   (op apply-primitive-procedure)
+                                                                   (reg proc)
+                                                                   (reg argl)))))))
+        after-call))))
+
+
+;; > compile-proc-appl は, 呼び出しの標的がvalかどうか, 接続がreturnかどうかによる4つの場合を考慮して,
+;; > 上の手続き作用のコードを生成する.
+;; すべてのregisterが修正されうるのでmodifiesに全部入っている(all-regs)ことに注意.
+(define (compile-proc-appl target linkage)
+  (cond ((and (eq? target 'val) (not (eq? linkage 'return))) ; case1
+         (make-instruction-sequence '(proc) all-regs
+                                    `((assign continue (label ,linkage))
+                                      (assign val (op compiled-procedure-entry)
+                                                  (reg proc))
+                                      (goto (reg val)))))
+        ;; case2
+        ((and (not (eq? target 'val))
+              (not (eq? linkage 'return)))
+         (let ((proc-return (make-label 'proc-return)))
+           (make-instruction-sequence '(proc) all-regs
+                                      `((assign continue (label ,proc-return))
+                                        (assign val (op compiled-procedure-entry)
+                                                    (reg proc))
+                                        (goto (reg val))
+                                        ,proc-return
+                                        (assign ,target (reg val))
+                                        (goto (label ,linkage))))))
+        ;; case3
+        ((and (eq? target 'val) (eq? linkage 'return))
+         (make-instruction-sequence '(proc continue) all-regs
+                                    `((assign val (op compiled-procedure-entry)
+                                                  (reg proc))
+                                      (goto (reg val)))))
+        ;; case4
+        ((and (not (eq? target 'val)) (eq? linkage 'return))
+         (error "return linkage, target not val -- COMPILE"
+                target))))
+
+;; 脚注より
+(define all-regs '(env proc val argl continue))
+
+
+;;;     5.5.4 命令列の組み合わせ
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (registers-needed s)
+  (if (symbol? s) '() (car s)))
+(define (registers-modified s)
+  (if (symbol? s) '() (cadr s)))
+(define (statements s)
+  (if (symbol? s) (list s) (caddr s)))
+
+(define (needs-register? seq reg)
+  (memq reg (registers-needed seq)))
+(define (modifies-register? seq reg)
+  (memq reg (registers-modified seq)))
+
+
+;; 何度も使われてきたappend-instruction-sequenceをようやく実装
+(define (append-instruction-sequence . seqs)
+  (define (append-2-sequences seq1 seq2)
+    (make-instruction-sequence
+      (list-union (registers-needed seq1)
+                  (list-difference (registers-needed seq2)
+                                   (registers-modified seq1)))
+      (list-union (registers-modified seq1)
+                  (registers-modified seq2))
+      (append (statements seq1) (statements seq2))))
+  (define (append-seq-list seqs)
+    (if (null? seqs)
+      (empty-instruction-sequence)
+      (append-2-sequences (car seqs)
+                          (append-seq-list (cdr seqs)))))
+  (append-seq-list seqs))
+
+;; 集合の表現
+(define (list-union s1 s2)
+  (cond ((null? s1) s2)
+        ((memq (car s1) s2) (list-union (cdr s1) s2))
+        (else (cons (car s1) (list-union (cdr s1) s2)))))
+
+(define (list-difference s1 s2)
+  (cond ((null? s1) '())
+        ((memq (car s1) s2) (list-difference (cdr s1) s2))
+        (else (cons (car s1)
+                    (list-difference (cdr s1) s2)))))
+
+;; 命令列組合わせ手続きpreserving
+(define (preserving regs seq1 seq2)
+  (if (null? regs)
+    (append-instruction-sequence seq1 seq2)
+    (let ((first-reg (car regs)))
+      (if (and (needs-register? seq2 first-reg)
+               (modifies-register? seq1 first-reg))
+        (preserving (cdr regs)
+                    (make-instruction-sequence
+                      (list-union (list first-reg)
+                                  (registers-needed seq1))
+                      (list-difference (registers-modified seq1)
+                                       (list first-reg))
+                      (append `((save ,first-reg))
+                              (statements seq1)
+                              `((restore ,first-reg))))
+                    seq2)
+        (preserving (cdr regs) seq1 seq2)))))
+
+;; another 列組合わせ手続き
+(define (tack-on-instruction-sequence seq body-seq)
+  (make-instruction-sequence
+    (registers-needed seq)
+    (registers-modified seq)
+    (append (statements seq) (statements body-seq))))
+
+;; testのあとの2つの選択肢を連結するのがparallelなんちゃら
+(define (parallel-instruction-sequence seq1 seq2)
+  (make-instruction-sequence
+    (list-union (registers-needed seq1)
+                (registers-needed seq2))
+    (list-union (registers-modified seq1)
+                (registers-modified seq2))
+    (append (statements seq1) (statements seq2))))
+
+
