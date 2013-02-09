@@ -54,14 +54,14 @@ eval-dispatch
 (branch (label ev-definition))
 (test (op if?) (reg exp))
 (branch (label ev-if))
-;; (test (op let?) (reg exp)) 本文には記述なし => 問題5.23
-;; (branch (label ev-let))
+(test (op let?) (reg exp)) ; q5.23.scm
+(branch (label ev-let))
 (test (op lambda?) (reg exp))
 (branch (label ev-lambda))
 (test (op begin?) (reg exp))
 (branch (label ev-begin))
-;; (test (op cond?) (reg exp)) 本文には記述なし => 問題5.23
-;; (branch (label ))
+(test (op cond?) (reg exp)) ; q5.23.scm
+(branch (label ev-cond))
 (test (op application?) (reg exp))
 (branch (label ev-application))
 (goto (label unknown-expression-type))
@@ -231,6 +231,15 @@ ev-if-consequent
 (assign exp (op if-consequent) (reg exp))
 (goto (label eval-dispatch))
 
+;; q5.23.scm >>>
+ev-let
+(assign exp (op let->combination) (reg exp))
+(goto (label eval-dispatch))
+
+ev-cond
+(assign exp (op cond->if) (reg exp))
+(goto (label eval-dispatch))
+;; <<< q5.23.scm
 
 ;; eval-dispatchの生き残りラスト. 代入系
 ;; 代入はregisterより上層のお話なので頭混乱しないように...
@@ -336,6 +345,10 @@ signal-error
     (if-consequent ,if-consequent)
     (if-predicate ,if-predicate)
     (if? ,if?)
+    (let? ,let?)
+    (let->combination ,let->combination)
+    (cond? ,cond?)
+    (cond->if ,cond->if)
     (lambda-body ,lambda-body)
     (lambda-parameters ,lambda-parameters)
     (lambda? ,lambda?)
