@@ -34,6 +34,7 @@ print-result
 (perform
   (op announce-output) (const ";;; EC-Eval value:"))
 (perform (op user-print) (reg val))
+(perform (op print-stack-statistics))
 (goto (label read-eval-print-loop)) ; ずっとるーぷ
 
 ;;; 以下本体スタート
