@@ -42,7 +42,7 @@
 
 ;; self-evaluatingな5という式をtarget val, linkage nextで翻訳すると...
 ;    5 -(翻訳)-> (assign val (const 5))
-;; 一方 linkage return ならば以下の命令を生じる.
+;; 一方 linkage return ならばcontinueを使って手続き呼び出しから戻る.
 ;    (assign val (const 5))
 ;    (goto (reg continue))
 
@@ -90,6 +90,7 @@
 
 
 ;; 多用することになるend-with-linkageを定義
+;; preserving '(continue) なのでcontinueを保存する必要がある時は保存する.
 (define (end-with-linkage linkage instruction-sequence)
   (preserving '(continue)
               instruction-sequence
@@ -145,6 +146,13 @@
                                                                (assign ,target (const ok))))))))
 
 ;;; 条件式の翻訳
+;   (test (op false?) (reg val))
+;   (branch (label false-branch))
+; true-branch
+;   <compilation of consequent  with given target, linkage, after-if>
+; false-branch
+;   <compilation of alternative with given target, linkage>
+; after-if
 (define (compile-if exp target linkage)
   (let ((t-branch (make-label 'true-branch))
         (f-branch (make-label 'false-branch))
@@ -192,7 +200,7 @@
     (let ((lambda-linkage
             (if (eq? linkage 'next) after-lambda linkage)))
       (append-instruction-sequence
-        (tack-on-instruction-sequence ; [new]
+        (tack-on-instruction-sequence ; [new] compile-lambdaでのみ利用.
           (end-with-linkage lambda-linkage
                             (make-instruction-sequence '(env) (list target)
                                                        `((assign ,target
@@ -297,6 +305,13 @@
         after-call))))
 
 
+;;; 翻訳した手続きの作用
+;; "翻訳した手続き(a compiled procedure)"はcompile-lambdaにより生成されたもの.
+;; ... と言うもんだからproc-returnはlambdaを翻訳した時に出るのかと思ったけど,
+;; lambdaに限らず手続き呼び出しの時に出てくる.
+;; (lambda (x) (* x x))ではprocを作るだけなので出てこないけど
+;; ((lambda (x) (* x x)) 2)とかやるとproc-returnが現れる.
+
 ;; > compile-proc-appl は, 呼び出しの標的がvalかどうか, 接続がreturnかどうかによる4つの場合を考慮して,
 ;; > 上の手続き作用のコードを生成する.
 ;; すべてのregisterが修正されうるのでmodifiesに全部入っている(all-regs)ことに注意.
@@ -398,13 +413,18 @@
         (preserving (cdr regs) seq1 seq2)))))
 
 ;; another 列組合わせ手続き
+;; seqにはいつものend-with-linkage結果が, body-seqにはcompile-lambda-bodyの結果が入る.
 (define (tack-on-instruction-sequence seq body-seq)
   (make-instruction-sequence
     (registers-needed seq)
     (registers-modified seq)
     (append (statements seq) (statements body-seq))))
+;; lambda-bodyは順序の大事な他の翻訳と違って, 本体がどこにあってもいい.
+;; label付けつつ適当にくっつけるときの手続き, らしい.
+;; ちょっと効率良くするためにこれ使うのかな?
 
 ;; testのあとの2つの選択肢を連結するのがparallelなんちゃら
+;; どちらかしか通らないコードを作る.
 (define (parallel-instruction-sequence seq1 seq2)
   (make-instruction-sequence
     (list-union (registers-needed seq1)
@@ -412,5 +432,4 @@
     (list-union (registers-modified seq1)
                 (registers-modified seq2))
     (append (statements seq1) (statements seq2))))
-
 
