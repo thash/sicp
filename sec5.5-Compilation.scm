@@ -436,3 +436,45 @@
                 (registers-modified seq2))
     (append (statements seq1) (statements seq2))))
 
+
+;;;     5.5.6 文面アドレス Lexical Addressing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; 文面アドレスは相対的なものなのでどこから参照するかによって表現は違ってくる
+
+;;; 問題
+;; q5.39.scm で実質的な実装を行う.
+;;  その後も問題がほぼ本文扱いなので, 各問題を独立させずうまく引き継いでいく必要がある.
+;; q5.40.scm compileに引数を追加. ct-envというのを翻訳時環境.
+;;   compile-lambda-bodyの変化に着目. (cons formals ct-env) を渡す.
+;;   どこで新しくframeを作るか, を自覚的に実装できるレイヤーを触っている.
+;; q5.41.scm 引数として変数と翻訳時環境ct-envを取り, その環境に対する変数の文面アドレスを返す手続きfind-variableを書け.
+;;   見つかったらmake-lexical addressを使って文面アドレスを返す.
+;; q5.42.scm find-variableを使い, compile-assignmentとcompile-variableを書きなおして文面アドレスを返すように書き換える.
+;;   出力されたmachine codeを見ると(op lexical-address-lookup) (const (0 1))などを生成するはず.
+;; q5.43.scm lambdaの中でのdefineは真のdefineと解釈するのではなく(let (u `*unassigned))などとしろ, という議論が以前あった(根拠とか要復習)
+;;   compile-lambda-bodyを書き換えてunassigned
+
+
+;;;     5.5.7 翻訳したコードと評価器のインターフェイス
+;;;           Interfacing Compiled Code to the Evaluator
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; まず翻訳機が翻訳した手続きを使えるようにapply-dispatchまわりのmachine codeを修正
+
+;; 解釈と翻訳
+;; 解釈系はstepが抽象化できてbug取りもすぐできる
+;; 翻訳系は機械語で実装されているので実行が速い
+
+;;; 問題
+;; q5.45.scm 翻訳版, 解釈版でのpush回数, max depthをNの式で表せ.
+;;   解釈/翻訳の比率が収束するのでそれを計算してみよ.
+;; q5.46.scm
+;;   push回数は線形に増えていないっぽいと.
+;; q5.47.scm 今の実装では合成手続きを呼べない. これを呼べるようにせよと.
+;;   compile-procedure-callの修正.
+;;   いままではprimitiveかcompiledかしか扱えなかったけど, compundも判定するようにするよと.
+;; q5.48.scm compile-and-goは1個しか翻訳できず使い勝手が悪い. 繰り返し使えるcompile-and-runを作れ.
+;;   compile-and-runの中でglobal環境の初期化をやらないようにしている.
+;;   駆動ループの中でもっかいcompileするようなコードを動かす.
+
