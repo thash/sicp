@@ -440,7 +440,24 @@
 ;;;     5.5.6 文面アドレス Lexical Addressing
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; 翻訳系を最適化しようとしたとき, ありがちなのは変数探索の最適化.
+;; lookup-variable-valueは常にframeの最初から探索するから,
+;; 深いところの変数を何度も参照すると無駄な比較が大量に発生する. これを改良しよう.
+;; letはlambdaとみなせるし, defineは使わないと仮定すれば変数はlambdaだけで束縛される.
+;; (defineを使う場合の話はq5.43.scmにて)
+
+;; そこで文面アドレス(lexical address)を導入する.
+;; > a lexical address that consists of two numbers:
+;; >   a frame number, which specifies how many frames to pass over, and
+;; >   a displacement number, which specifies how many variables to pass over in that frame.
+;; (1 2) -> 1個のframeを読み飛ばし, 2個の変数を読み飛ばしたところにある変数を指す.
 ;; 文面アドレスは相対的なものなのでどこから参照するかによって表現は違ってくる
+
+;; 文面アドレス実装法の1つは翻訳時環境(compile-time environment)というデータ構造を維持すること.
+;; ある変数アクセス演算を実行する時に, どの変数が実行時環境のどのフレームのどの場所にあるかを記憶.
+;;   * 翻訳時環境は"それぞれが変数のリストを持つフレーム"のリストである.
+;;   * 翻訳時環境には変数名だけ保持, 値は計算しない.
+;;   * 翻訳時環境はcompileの追加引数になる
 
 ;;; 問題
 ;; q5.39.scm で実質的な実装を行う.
