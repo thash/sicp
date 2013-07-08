@@ -7,7 +7,7 @@
 (define (car z)
   (z (lambda (p q) p)))
 
-; answer
+; answer -- まだここでは置き換えモデルが使える.
 ; (car (cons x y))
 ; => (car (lambda (m) (m x y)))
 ; => ((lambda (m) (m x y)))

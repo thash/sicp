@@ -15,5 +15,3 @@
 ; (((double (double double)) inc) 5)
 ; というのをやっている。
 
-
-
