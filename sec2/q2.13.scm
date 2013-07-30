@@ -1,22 +1,14 @@
 (add-load-path ".")
-(load "q2.7")
+(add-load-path "./sec2")
+(load "q2.12")
 
-; R1-R1P1 + R2-R2P2
-; = R1+R2 - (R1P1+R2P2)
+;; パーセント相対許容誤差が小さいと仮定できるときは, 2ツの区間の積の相対許容誤差を, 因子の許容誤差を使って近似できる簡単な式があることを示せ.
 
-
-; R1+R2 + (R1P1+R2P2) ; これはなに？
-
-; R1R2 / (R1+R2)
-(define (par1 r1 r2)
-  (div-interval (mul-interval r1 r2)
-                (add-interval r1 r2)))
-
-(define (par2 r1 r2)
-  (div-interval one
-                (add-interval
-                  (div-interval one r1)
-                  (div-interval one r2))))
-
-; 二つの結果が異なる。なぜか
-
+;; パーセント相対許容誤差をそれぞれe_a, e_bとすると
+;; a' = a + e_a
+;; b' = b + e_b
+;; と表せる. (a >> e_a, b >> e_b)
+;; a'b' = (a + e_a)(b + e_b) = ab + a e_b + b e_a + e_a e_b
+;;     =~ ab + (a e_b + b e_a) ;; 小さすぎる値を無視
+;; 許容誤差が(a e_b + b e_a)で近似される.
+;; 相対許容誤差は (a e_b + b e_a) / ab = e_a / a + e_b / b となる.

@@ -1,4 +1,5 @@
 (add-load-path ".")
+(add-load-path "./sec2")
 (load "sec2.1.4")
 
 ; from sec2.1.4
@@ -14,6 +15,4 @@
     (error "error")
     (mul-interval x
                   (make-interval (/ 1.0 (upper-bound y))
-                                 (/ 1.0 (lower-bound y))
-                                 ))))
-
+                                 (/ 1.0 (lower-bound y))))))

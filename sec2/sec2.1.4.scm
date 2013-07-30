@@ -2,12 +2,10 @@
 ; 上端と下端を持つ「区間」というオブジェクトを仮定。
 (define (add-interval x y)
   (make-interval (+ (lower-bound x) (lower-bound y))
-                 (+ (upper-bound x) (upper-bound y))
-                 ))
-; ここでmake-intervalはまだ仮定。
+                 (+ (upper-bound x) (upper-bound y))))
+; ここでmake-intervalはまだ仮定. q2.7.scm で実装する.
 
 ; 限界の積の最大値と最小値を見つけ、それらを結果の区間の限界とすることで、2つの区間の積も作った。
-; # ここで定義したのか
 (define (mul-interval x y)
   (let ((p1 (* (lower-bound x) (lower-bound y)))
         (p2 (* (lower-bound x) (upper-bound y)))
