@@ -40,14 +40,14 @@
             (append (fringe (car items)) (fringe (cdr items))))
           )))
 
- x = ((1 2) (3 4)) は分解できた
+; x = ((1 2) (3 4)) は分解できた
 ;
 ; (define z (list (list 1 (list 2 3) 4) (list (list (list 6 7 8) 9))))
 ; => ((1 (2 3) 4) (((6 7 8) 9)))
 ;
 ; これはできない。
 
-; wikiの回答
+; wikiの回答(不完全)
 (define (fringe x)
   (cond ((null? x) nil)
         ((pair? x) (append (fringe (car x)) (fringe (cdr x))))
@@ -73,8 +73,9 @@
 
 ; これはきれい。
 
-
-
-
-
-
+;; 20130804 別の回答を模索したが,
+;;   appendを使って再帰的に
+;;   appendを使って反復的に
+;;   appendを使わず反復的に
+;; しかできないか. appendなしで再帰的に書きたかったけどいままでの結果とconsしてやらないといけない.
+;; lambdaを返せばできなくはなさそうだが
