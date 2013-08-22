@@ -1,6 +1,8 @@
 (add-load-path ".")
 (load "my_defs")
 
+;; accumulate = fild-right(foldr, または単にfold) という別名.
+;; fild-left という, 逆方向で畳み込む関数もある.
 ; accumulate 再定義
 (define (accumulate op initial sequence)
   (if (null? sequence)
@@ -9,8 +11,7 @@
         (accumulate op initial (cdr sequence)))))
 (trace accumulate)
 
-(define (fold-right op initial sequence)
-  (accumulate op initial sequence))
+(define fold-right accumulate) ;; define alias
 
 (define (fold-left op initial sequence)
   (define (iter result rest)
@@ -18,10 +19,12 @@
       result
       (iter (op result (car rest))
             (cdr rest))))
-  (trace iter)
+  ;(trace iter)
   (iter initial sequence))
 
 
+;; fold-right はこうなる: (/ (/ (/ 1 1) 2) 3)
+;; (/ 3 2) => 3/2, (/ 3/2 1) => 3/2
 ; gosh> (fold-right / 1 (list 1 2 3))
 ; gosh> CALL accumulate #[proc] 1 (1 2 3)
 ;   CALL accumulate #[proc] 1 (2 3)
@@ -33,6 +36,8 @@
 ; RETN accumulate 3/2
 ; 3/2
 
+;; fold-left はこうなる: (/ 1 (/ 2 (/ 3 1)))
+;; (/ 1 2) => 1/2, (/ 1/2 3) => 1/6
 ; gosh> (fold-left / 1 (list 1 2 3))
 ; CALL iter 1 (1 2 3)
 ;   CALL iter 1 (2 3)
@@ -106,6 +111,5 @@
 ;
 ; 結合法則を満たすような演算である必要がある(例、かけ算)。
 
-
-
-
+;; 双対: duality
+;; AとBの関連性において, AがBであれば必ずBがAであること. だいぶ広い概念
