@@ -32,12 +32,15 @@
 
 ; filter -- Rubyで言うselectを実装する。
 (define (filter predicate sequence)
-  (cond ((null? sequence) ())
+  (cond ((null? sequence) '())
         ((predicate (car sequence))
          (cons (car sequence)
                (filter predicate (cdr sequence))))
         (else (filter predicate (cdr sequence)))))
 
+;; [2nd]20130819 手続き名がfilterの時のみ失敗する...
+;;      (even?, mapなどの名前なら既存の手続き上書きしても大丈夫だった).
+;;      のでmy-filterかにすると良いのかな
 ; gosh> (filter odd? (list 1 2 3 4 5))
 ; (1 3 5)
 
