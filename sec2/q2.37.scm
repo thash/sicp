@@ -15,7 +15,7 @@
         (accumulate op initial (cdr sequence)))))
 
 (define (accumulate-n op initial seqs)
-  (if (null? (car seqs)) ; ˆêŒÂ‰º‚ðŒ©‚È‚¯‚ê‚Î‚È‚ç‚È‚¢
+  (if (null? (car seqs)) ; ä¸€å€‹ä¸‹ã‚’è¦‹ãªã‘ã‚Œã°ãªã‚‰ãªã„
     ()
     (cons (accumulate op initial (map car seqs))
           (accumulate-n op initial (map cdr seqs)))))
@@ -25,13 +25,16 @@
 
 (define m (list (list 1 2 3 4) (list 4 5 6 6) (list 6 7 8 9)))
 (define v (list 9 8 7))
+(define e3 (list (list 1 0 0) (list 0 1 0) (list 0 0 1)))
+(define e4 (list (list 1 0 0 0) (list 0 1 0 0) (list 0 0 1 0) (list 0 0 0 1)))
 
-; vector“¯Žm‚Ì"“àÏ"
+; vectoråŒå£«ã®"å†…ç©"
 (define (dot-product v w)
-  (accumulate + 0 (map * v w)))
-; (map proc list1 list2) ‚±‚ê‚à‚Ü‚½map‚ÆŒÄ‚Î‚ê‚éB
+  (accumulate + 0 (map * v w))) ; (map proc list1 list2) yet another map
+;; gosh> (map * (list 1 2 3) (list 3 4 5))
+;; (3 8 15)
 
-; gosh> (dot-product v v)
+; gosh> (dot-product v v) {{{
 ; CALL accumulate #[proc] 0 (81 64 49)
 ;   CALL accumulate #[proc] 0 (64 49)
 ;     CALL accumulate #[proc] 0 (49)
@@ -40,7 +43,7 @@
 ;     RETN accumulate 49
 ;   RETN accumulate 113
 ; RETN accumulate 194
-; 194
+; 194 }}}
 
 
 (define (matrix-*-vector m v)
@@ -48,9 +51,13 @@
     (lambda (row) (dot-product row v))
     m))
 ; return the vector. t(i) = SUMj{m(ij)*v(j)}
-; m‚ÌŠe—v‘f(=vector=list)‚ªrow‚Æ‚µ‚Äv‚Ædot-product‚³‚ê‚éB
-;
-; gosh> (matrix-*-vector m v)
+; mã®å„è¦ç´ (=vector=list)ãŒrowã¨ã—ã¦vã¨dot-productã•ã‚Œã‚‹ã€‚
+
+;; æœ¬æ–‡ã¨åˆ¥ã®ä¾‹:
+;; gosh> (matrix-*-vector (list (list 1 2 3) (list 4 5 6) (list 7 8 9)) (list 1 2 3))
+;; (14 32 50)
+
+; gosh> (matrix-*-vector m v) {{{
 ; CALL dot-product (1 2 3 4) (9 8 7)
 ;   CALL accumulate #[proc] 0 (9 16 21)
 ;     CALL accumulate #[proc] 0 (16 21)
@@ -81,11 +88,12 @@
 ;     RETN accumulate 112
 ;   RETN accumulate 166
 ; RETN dot-product 166
-; (46 118 166)
+; (46 118 166) }}}
 
 (define (transpose m)
   (accumulate-n cons () m))
-; gosh> (transpose m)
+
+; gosh> (transpose m) {{{
 ; CALL accumulate-n #[proc] () ((1 2 ...) (4 5 6 6) (6 7 8 9))
 ;   CALL accumulate #[proc] () (1 4 6)
 ;     CALL accumulate #[proc] () (4 6)
@@ -128,8 +136,7 @@
 ;     RETN accumulate-n ((3 6 8) (4 6 9))
 ;   RETN accumulate-n ((2 5 7) (3 6 8) (4 6 9))
 ; RETN accumulate-n ((1 ...) (2 5 7) (3 6 8) (4 6 9))
-; ((1 4 6) (2 5 7) (3 6 8) (4 6 9))
-
+; ((1 4 6) (2 5 7) (3 6 8) (4 6 9)) }}}
 
 (define (matrix-*-matrix m n)
   (let ((cols (transpose n)))
@@ -140,7 +147,7 @@
 (define m1 (list (list 1 2 3) (list 3 5 1) (list 1 1 1)))
 (define m2 (list (list 1 2 3) (list 4 5 6) (list 7 8 9)))
 
-; gosh> (matrix-*-matrix m1 m2)
+; gosh> (matrix-*-matrix m1 m2) {{{
 ; CALL accumulate-n #[proc] () ((1 2 ...) (4 5 6) (7 8 9))
 ;   CALL accumulate #[proc] () (1 4 7)
 ;     CALL accumulate #[proc] () (4 7)
@@ -277,12 +284,15 @@
 ;     RETN accumulate-n ((12 15 18))
 ;   RETN accumulate-n ((30 39 48) (12 15 18))
 ; RETN accumulate-n ((30 36 42) (30 39 48) (12 15 18))
-; ((30 36 42) (30 39 48) (12 15 18))
+; ((30 36 42) (30 39 48) (12 15 18)) }}}
 
+;; åˆ¥ã®ä¾‹: å˜ä½è¡Œåˆ—ã‹ã‘ã¦ã‚‚å¤‰åŒ–ãªã—
+;; gosh> (matrix-*-matrix m1 e3)
+;; ((1 2 3) (3 5 1) (1 1 1))
 
 ; ---------------------------------------
 ;
-; ##•Ê‚Ì—á
+; ##åˆ¥ã®ä¾‹
 ;
 ; * matrix x vector
 ;
@@ -290,7 +300,7 @@
 ; | 4 5 6 | x | 2 | = | 32 |
 ; | 7 8 9 |   | 3 |   | 50 |
 ;
-; gosh> (matrix-*-vector m v)
+; gosh> (matrix-*-vector m v) {{{
 ; CALL accumulate #[proc] 0 (1 4 9)
 ;   CALL accumulate #[proc] 0 (4 9)
 ;     CALL accumulate #[proc] 0 (9)
@@ -315,5 +325,6 @@
 ;     RETN accumulate 27
 ;   RETN accumulate 43
 ; RETN accumulate 50
-; (14 32 50)
-;
+; (14 32 50) }}}
+
+
