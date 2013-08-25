@@ -2,7 +2,7 @@
 ;;;       (conventional interface)
 (add-load-path ".")
 (load "my_defs")
-(load "q1.19")
+(load "./sec1/q1.19")
 
 (define (sum-odd-squares tree)
   (cond [(null? tree) 0]
@@ -38,9 +38,6 @@
                (filter predicate (cdr sequence))))
         (else (filter predicate (cdr sequence)))))
 
-;; [2nd]20130819 手続き名がfilterの時のみ失敗する...
-;;      (even?, mapなどの名前なら既存の手続き上書きしても大丈夫だった).
-;;      のでmy-filterかにすると良いのかな
 ; gosh> (filter odd? (list 1 2 3 4 5))
 ; (1 3 5)
 
@@ -81,8 +78,8 @@
 
 ; enumerate-treeで処理すべき葉をリストアップし、odd?でfilterする。
 ; accumulate, filter, sum-odd-squaresすべてをtraceしてみると
-;
-; gosh>  (sum-odd-squares x)
+
+; gosh>  (sum-odd-squares x) {{{
 ; CALL sum-odd-squares ((1 2 (3 4 (5 6) 7)))
 ;   CALL filter #[proc] (1 2 3 4 5 6 7)
 ;     CALL filter #[proc] (2 3 4 5 6 7)
@@ -105,9 +102,7 @@
 ;     RETN accumulate 83
 ;   RETN accumulate 84
 ; RETN sum-odd-squares 84
-; 84
-;
-; こうなる。
+; 84 }}}
 
 (define (even-fibs n)
   (accumulate cons
@@ -141,14 +136,12 @@
               (map salary
                    (filter programmer? records))))
 
+
+;; p.71 写像の入れ子
+;; ==================================================
+
 ; Nested Mappings
 ; ある正の整数nに対し 1 <= j < i <= n である異なる整数jとiの順序対で、i+jが素数になるものを選択する
-
-; enumerate-interval -- sec2.2.3より
-(define (enumerate-interval low high)
-  (if (> low high)
-    ()
-    (cons low (enumerate-interval (+ low 1) high))))
 
 ; Tips: consでlistを作る時の注意。最終項とnilをconsするべき
 ; gosh> (cons 1 (cons 2 (cons 3 4)))
@@ -156,15 +149,9 @@
 ; gosh> (cons 1 (cons 2 (cons 3 (cons 4 ()))))
 ; (1 2 3 4)
 
-; accumulate -- sec2.2.3より
-(define (accumulate op initial sequence)
-  (if (null? sequence)
-    initial
-    (op (car sequence)
-        (accumulate op initial (cdr sequence)))))
-
 ; 実装 -- "For each interger i<=n, enumerate the intergers j<i, and for each such i and j generate the pair (i,j). In terms of sequence operations, we map along the sequence (enumerate-interval 1 n). For each i in this sequence, we map along the sequence (enumerate-interval 1 (- i 1)). For each j in this latter sequence, we generate the pair (list i j). This gives us a sequence of pairs for each i. Combining all the sequences for all the i (by accumulating with append) produces the required sequence of pairs"
-;
+
+;; こんな感じで使います(下記prime-sum-pairs中, flatmapとして出ている)
 ; (accumulate append
 ;             nil
 ;             (map (lambda (i)
@@ -172,47 +159,58 @@
 ;                         (enumerate-interval 1 (- i 1))))
 ;                  (enumerate-interval 1 n)))
 
-; mappingとaccumulatingの組み合わせを一般化しよう
+; mappingとaccumulatingの組み合わせはよくあるので, 一般化しよう
 ; listのlistから1つのlistを作るflatmap.
-(define (flatmap proc seq)
+(define (flatmap proc seq) ;; seqは'((1 2 3) (4 5 6)) みたいな感じ
   (accumulate append () (map proc seq)))
 ;; procの使い所が今ひとつ...
 ; gosh> (flatmap + (list (list 3 4) (list 1 2)))
 ; (3 4 1 2)
 
+(add-load-path ".")
+(load "./sec1/sec1.2.6.scm") ;; prime? をロードする
 ; 対の和が素数になるものを発見するfilter
 (define (prime-sum? pair)
   (prime? (+ (car pair) (cadr pair))))
+;; gosh> (prime-sum? (list 1 2)) ;;=> #t
 
-; 最後に、対の二つの要素とその和でpairを作る。pairとは言うが実装的にはlist (cadrしてるし)
+;; 最後に、対の二つの要素とその和でpairを作る。出力用.
+;; pairとは言うが実装的にはlist (cadrしてるし)
 (define (make-pair-sum pair)
-  #?=(list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
 
 ; 以上より結論。
 (define (prime-sum-pairs n)
-  (map (make-pair-sum
+  (map make-pair-sum
          (filter prime-sum?
                  (flatmap
                    (lambda (i)
                      (map (lambda (j) (list i j))
                           (enumerate-interval 1 (- i 1))))
-                   (enumerate-interval 1 n))))))
+                   (enumerate-interval 1 n)))))
 
+;; gosh> (prime-sum-pairs 10)
+;; ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7) (6 1 7) (6 5 11) (7 4 11) (7 6 13) (8 3 11) (8 5 13) (9 2 11) (9 4 13) (9 8 17) (10 1 11) (10 3 13) (10 7 17) (10 9 19))
+
+;; [20130825] bug記録
+;; gosh> !!!*** ERROR: operation + is not defined between (2 1) and (3 2)!!!
+;; 原因: mapにmake-pair-sumを手続きとして渡すのではなくそのまま作用させてしまっていた
+;; X: (map (make-pair-sum (filter ...)))
+;; O: (map make-pair-sum (filter ...))
 
 ; この手続きの別の応用。集合Sのすべての順列を生成する。
-; permutation of (1 2 3) is ((1 2 3) (1 3 2)...)
-; require "flatmap"
-(define (permutations s)
-  (if (null? s)
-    (list ())
-    (flatmap (lambda (x)
-               (map (lambda (p) (cons x p))
-                    (permutations (remove x s)))) ; 除いたものとconsする
-             s)))
-
-; ↑のremoveはこうやって定義する
-; require "filter"
+;; 補助手続きremove
 (define (remove item sequence)
   (filter (lambda (x) (not (= x item)))
           sequence))
 
+(define (permutations s)
+  (if (null? s)
+    (list '())
+    (flatmap (lambda (x)
+               (map (lambda (p) (cons x p))
+                    (permutations (remove x s)))) ; 除いたものとconsする
+             s)))
+; permutation of (1 2 3) is ((1 2 3) (1 3 2)...)
+;; gosh> (permutations (list 1 2 3))
+;; ((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))
