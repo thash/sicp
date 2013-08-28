@@ -1,10 +1,12 @@
 (add-load-path ".")
 (load "my_defs")
-(load "sec2.2.3") ; for filter
-(load "sec2.2.3-nesting") ; for makr-pair-sum
-(load "q1.22") ; for prime?
+(load "./sec2/sec2.2.3") ; for filter
+(load "./sec1/q1.22") ; for prime?
 
 ; 与えられた整数nに対して 1<=j<i<=n の対(i,j)の並びを生成する手続きunique-pairsを定義する。
+; j<iなのが文例とは違うところ. 同じ数字を足すと必ず2で割れるため素数ではない.
+; 予め候補から取り除いておこうという考えかな?
+
 ; 答えは次のようになるべき。
 ; (unique-pairs 1) ; => ()
 ; (unique-pairs 2) ; => ((2 1)) i = 2, j = 1 ... iとjの差が少なくとも1はなくてはならない
@@ -42,10 +44,19 @@
 ; require "flatmap", "enumerate-interval"
 (define (unique-pairs n)
   (flatmap (lambda (j)
-         (map (lambda (i) (list i j)) (enumerate-interval (+ j 1) n)))
-       (enumerate-interval 1 (- n 1))))
+         (map (lambda (i) (list i j))
+              (enumerate-interval (+ j 1) n))) ; *2
+       (enumerate-interval 1 (- n 1)))) ; *1
+;; prime-sum-pairsのflatmap部分との差異は以下のとおり
+;; *1: n -> (- n 1).
+;;     flatmapに与える元seqがn-1までになっている
+;; *2: (enumerate-interval 1 (- i 1)) -> (enumerate-interval (+ j 1) n).
 
+;; gosh> (unique-pairs 4)
+;; ((2 1) (3 1) (4 1) (3 2) (4 2) (4 3))
 
+;; (unique-pairs 4)
+;; -> (flatmap (lambda (j) (map (lambda (i) (list i j)))) (1 2 3))
 
 ; --------------------
 ; 次に、unique-pairsを用いてprime-sum-pairsを簡単にする。

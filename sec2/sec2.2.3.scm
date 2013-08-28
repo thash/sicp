@@ -51,13 +51,13 @@
 ; gosh> (accumulate + 0 (list 1 2 3 4 5 6 7 8 9))
 ; 45
 
-; 処理すべき要素の並びを数え上げる
+; lowからhighまでのsequenceを作る手続き
 (define (enumerate-interval low high)
   (if (> low high)
     ()
     (cons low (enumerate-interval (+ low 1) high))))
-
-(enumerate-interval 2 7)
+;; gosh> (enumerate-interval 2 7)
+;; (2 3 4 5 6 7)
 
 ; 木の葉を数え上げる. Rubyで言うflatten.
 (define (enumerate-tree tree)
@@ -168,8 +168,8 @@
 ; (3 4 1 2)
 
 (add-load-path ".")
-(load "./sec1/sec1.2.6.scm") ;; prime? をロードする
-; 対の和が素数になるものを発見するfilter
+(load "./sec1/sec1.2.6.scm") ;; load prime?
+; prime-sum?: 対の和が素数になるものを発見するfilter
 (define (prime-sum? pair)
   (prime? (+ (car pair) (cadr pair))))
 ;; gosh> (prime-sum? (list 1 2)) ;;=> #t
