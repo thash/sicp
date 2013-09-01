@@ -9,6 +9,7 @@
 
 ; リストの要素を調べていって、演算子、加算数、被加算数を区別する処理をまず考える。積とかも同じく。
 ; sec2.3.1で定義したmemqが使えそうである。用意しておこう。
+; 20130901: Gauche組み込みでmemq実装されてたので不要.
 
 (define (memq item x)
   (cond ((null? x) #f)
@@ -46,11 +47,18 @@
 ; (4 * x)
 ; (a + b + c) のときaだけ取れてくる形。b+cは後にする。
 
-; augendの方は簡単。
-(define (augend x) (cdr (memq '+ x)))
+; augendの方は簡単... と思いきや
+(define (augend-bad x) (cdr (memq '+ x)))
 
-; gosh> (augend '(4 * x + 4 * y))
-; (4 * y)
+;; 20130901: こうなるのを防ぐため, 要素数チェックが必要.
+;; gosh> (augend-bad '(x * y + z))
+;; (z)
+
+(define (augend x)
+  (let ((result (cdr (memq '+ x))))
+  (if (null? (cdr result))
+    (car result)
+    result)))
 
 ; これで多項式も扱えるようになった。
 ; gosh> (addend '(x * y * z + 3 * x + (x * x) * 4))
@@ -74,7 +82,7 @@
 (define (multiplier x) (car x))
 
 ; 2項しかないケースをnull? cdddrで検知してその場合はlistでwrapしないそのものを返すようにする。
-(define (multiplicand x)
+(define (multiplicand-bad x)
   (if (null? (cdddr x))
     (caddr (memq '* x))
     (cdr (memq '* x))))
@@ -83,6 +91,15 @@
 ; x
 ; gosh> (multiplicand '(x * y * z * 3 * x * (x * x) * 4))
 ; (y * z * 3 * x * (x * x) * 4)
+
+;; 20130901 一番シンプルなケースでエラーが出る.
+;; (multiplicand-bad '(2 * x))
+;; => エラー.
+;; こうした. 詳細は ./presentations/20130902p83-88.scm 参照
+(define (multiplicand x)
+  (bare (cdr (memq '* x))))
+(define (bare x)
+  (if (null? (cdr x)) (car x) x))
 
 (define (deriv exp var)
   (cond ((number? exp) 0)
