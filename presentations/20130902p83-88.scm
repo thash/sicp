@@ -67,12 +67,16 @@
 ;; * aとbが同時にnullになれば#t
 ;; * aとbのどちらかが先にnullになれば, そもそも要素数が違うということなので#f
 
+        ;((or (and (null? a) (not (null? b)))
+             ;(and (null? b) (not (null? a)))) #f)
 (define (my-equal? a b)
-  (cond ((and (null? a) (null? b)) #t)
-        ((or (and (null? a) (not (null? b)))
-             (and (null? b) (not (null? a)))) #f)
-        (else (and (eq? (car a) (car b)) (my-equal? (cdr a) (cdr b))))))
+  (cond ((and (symbol? a) (symbol? b) (eq? a b)) #t)
+        ((and (null? a) (null? b)) #t)
+        (else (and (pair? a) (pair? b)
+                   (my-equal? (car a) (car b))
+                   (my-equal? (cdr a) (cdr b))))))
 
+;; 数値の時は = を使う (注釈)
 
     (my-equal? '(this is a list) '(this is a list)) ; => #t
     (my-equal? '(this is a list) '(this (is a) list)) ; => #f
@@ -96,6 +100,8 @@
 
 ;; 'はquote手続きの省略形で, 実際は(quote ...)として解釈される(p.84の脚注34にも書いてる)
 ;; したがって以下は等価
+
+;; ' は特殊形式なので"作用させる"とは言わない
 
     ''abracadabra
     (quote (quote abracadabra))
@@ -236,11 +242,13 @@
 (define (exponent x) (caddr x))
 
 (define (make-exponentiation base exponent)
-  (cond ((=number? exponent 0) 1) ;; 何かの0乗は1
+  (cond ((=number? base 1) 1) ;; 1は何じょうしても1
+    ((=number? exponent 0) 1) ;; 何かの0乗は1
         ((=number? exponent 1) base) ;; 何かの1乗はそれ自身
         ((and (number? base) (number? exponent)) (** base exponent)) ;; 計算可能なら計算
         (else (list '** base exponent))))
 
+    (make-exponentiation 1 '(+ x y)) ;; => 1
     (make-exponentiation '(* x y) 1) ;; => (* x y)
     (make-exponentiation '(* x y) 0) ;; => 1
     (make-exponentiation 2 3) ;; => 8
@@ -377,6 +385,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; b. 中置記法, (a)で導入した簡略化を撤廃し普通の代数式と同じように書きたい.
 
+;; *と+の優先度
+
     ;; 例:
     (x + 3 * (x + y + 2))
 
@@ -386,7 +396,8 @@
 ;;;;; sum? 系... 要素の中に1つでも'+が存在すればsum式. ;;;;;
 ;; list中からitemを探し, 見つかったらそれ以降のlistを返すmemqを使う.
 (define (sum? x)
-  (if (eq? #f (memq '+ x)) #f #t))
+  ;; (if (eq? #f (memq '+ x)) #f #t))
+  (not (memq '+ x)))
 
     (sum? '(x + y + z)) ;; => #t
     (sum? '(x * y + z)) ;; => #t
