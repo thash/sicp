@@ -12,9 +12,6 @@
                       (else
                         (cons x2 (union-set set1 (cdr set2)))))))))
 
-; (define s1 '(1 3 6))
-; (define s2 '(2 3 4 7))
-; gosh> (union-set s1 s2)
-; (1 2 3 4 6 7)
 
+    (union-set '(1 3 6) '(2 3 4 7)) ;; => (1 2 3 4 6 7)
 
