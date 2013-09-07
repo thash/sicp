@@ -395,9 +395,10 @@
 
 ;;;;; sum? 系... 要素の中に1つでも'+が存在すればsum式. ;;;;;
 ;; list中からitemを探し, 見つかったらそれ以降のlistを返すmemqを使う.
+;; 最初は (if (eq? #f (memq '+ x)) #f #t)) としていたがmemqのnot2回でいけるという指摘
+;; 他言語の!!expr, と同じか.
 (define (sum? x)
-  ;; (if (eq? #f (memq '+ x)) #f #t))
-  (not (memq '+ x)))
+  (not (not (memq '+ x))))
 
     (sum? '(x + y + z)) ;; => #t
     (sum? '(x * y + z)) ;; => #t
@@ -443,7 +444,7 @@
     #t #f))
 
 (define (has-*? x)
-  (if (eq? (memq '* x) #f) #f #t))
+  (not (memq '+ x))) ;; こっちもmemqのnotでおｋ.
 
     (product? '(x * y)) ;; => #t
     (product? '(x * y * 2 * z)) ;; => #t
