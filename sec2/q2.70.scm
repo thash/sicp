@@ -1,5 +1,4 @@
-(load "./q2.68")
-(load "./q2.69")
+(load "./sec2/q2.69.scm")
 
 (define words
   '((A 2) (NA 16) (BOOM 1) (SHA 3) (GET 2) (YIP 9) (JOB 2) (WAH 1)))

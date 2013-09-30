@@ -1,4 +1,4 @@
-(load "./q2.68")
+(load "./sec2/q2.68.scm")
 (use gauche.test)
 
 (test-start "q2.68")

@@ -1,4 +1,4 @@
-(load "./sec2.3.4")
+(load "./sec2/q2.68.scm")
 ; Huffman木を生成する手続き。
 (define (generate-huffman-tree pairs)
   (successive-merge (make-leaf-set pairs)))

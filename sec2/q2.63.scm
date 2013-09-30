@@ -1,7 +1,5 @@
 ;; 二進木をリストに変換する
-(add-load-path "." :relative)
-(add-load-path "./sec2")
-(load "sec2.3.3") ;; tree部分をloadする.
+(load "./sec2/sec2.3.3.scm") ;; tree部分をloadする.
 
 ;; ざっくり: 再帰なのでオーバーヘッドある. appendが重い
 (define (tree->list-1 tree)

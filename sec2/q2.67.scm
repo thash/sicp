@@ -1,4 +1,4 @@
-(load "./sec2.3.4")
+(load "./sec2/sec2.3.4.scm")
 
 (define sample-tree
   (make-code-tree (make-leaf 'A 4)

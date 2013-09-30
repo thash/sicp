@@ -1,4 +1,4 @@
-(load "./q2.67")
+(load "./sec2/q2.67.scm")
 
 (define (encode message tree)
   (if (null? message)
