@@ -9,8 +9,13 @@
 ; ref: http://d.hatena.ne.jp/bowmoq/20090421/1240268588
 ; adjoin-set を使う.
 (define (successive-merge set)
-  (if (null? (cdr set)) (car set)
-        (successive-merge  (adjoin-set (make-code-tree (car set) (cadr set))
-                                   (cddr set)))))
+  (if (null? (cdr set)) ;; 最終的に要素が1個になったら終了
+      (car set)
+      (let ((first  (car set))   ;; 可読性のために名前付け
+            (second (cadr set))
+            (rest   (cddr set)))
+        (successive-merge (adjoin-set (make-code-tree first second)
+                                      rest)))))
 
+;; successive-mergeを読んだ時点で小さい順に並んでいる
 

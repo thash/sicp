@@ -6,6 +6,7 @@
 ; (display (generate-huffman-tree words))
 ; => ((leaf NA 16) ((leaf YIP 9) (((leaf A 2) ((leaf WAH 1) (leaf BOOM 1) (WAH BOOM) 2) (A WAH BOOM) 4) ((leaf SHA 3) ((leaf JOB 2) (leaf GET 2) (JOB GET) 4) (SHA JOB GET) 7) (A WAH BOOM SHA JOB GET) 11) (YIP A WAH BOOM SHA JOB GET) 20) (NA YIP A WAH BOOM SHA JOB GET) 36)
 
+;; q2.68.scm generate-huffman-tree
 (define h-tree (generate-huffman-tree words))
 
 (define message
@@ -38,3 +39,7 @@
 
 (* 3 (length message)) ; => 108bit.
 
+;; 圧縮すると84bitなので,
+;; 圧縮率(/ 84 108.0) => 0.78程度.
+
+;; exact->inexact しなくても分母を実数にすればいいのか.
