@@ -1,11 +1,14 @@
 ;;問題: 汎用算術演算パッケージに多項式用の=zero?を定義せよ。これはadjoin-termが、その係数自体がまた多項式である多項式に対しても働くものとする。
 ;;
+;; つまり, (y^2 + 1)x^2 + (0y^2 + 0y)x + 1のような式に対しても, xの係数が=zero? trueになるということ
+;; 内部手続き=zero系を幾つか定義して, 最後に=zero?へ統合, polynomialにdispatch.
+;;
 ;; (every =zero? list) everyは、listがすべてzeroかどうかを判定する手続き。
 ;;                    Rubyで言うEnumerable#allか。
 ;;
 ;; 多項式相手にも使えるように。
 ;; (make-polynomial .. 'x '((5 0) (4 0)))は=zero?が#tだけど'((5 1) (4 0))とすると#fになるような。
-                  
+
 (define (install-polynomial-package)
   (define (make-poly variable term-list)
     (cons variable term-list))
