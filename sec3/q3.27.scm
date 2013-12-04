@@ -35,11 +35,13 @@
   (let ((table (make-table)))
     (lambda (x)
       (let ((previously-computed-result (lookup x table)))
-        (or previously-computed-result
+        (or previously-computed-result ;; lookupで見つかれば返す. なければorの2個目評価で計算
             (let ((result (f x)))
               (insert! x result table)
               result))))))
 
+;; memo-fib自体は変数の形でdefine.
+;; memoizeがlambdaを返すので手続きとして使用可能.
 (define memo-fib
   (memoize (lambda (n)
              (cond ((= n 0) 0)
@@ -118,5 +120,9 @@
 ;; 21
 ;; }}}2
 
+
 ;; "この方式はmemo-fibを単に(memoize fib)と定義しても動くだろうか。"
+
+;; 動くこた動くし結果も正しいが, 引数をkeyとしてしかmemo化されない
+;; (途中経過がmemo化されない)ので, 巨大な値を計算したときにメリットが少ない.
 

@@ -1,8 +1,9 @@
 ;; "局所状態を持つ手続き"としてキューを実装する。
+;; queueとは, "itemを1方の端(rear:後ろ側)から挿入して他方(front:前)から削除する並び"である
 
 ;; http://oss.timedia.co.jp/show/SICP/ex-3.22
 (define (make-queue)
-  (let ((front-ptr '())
+  (let ((front-ptr '()) ;; queueの先頭/末尾へのポインタ
         (rear-ptr '()))
     (define (set-front-ptr! item) (set! front-ptr item))
     (define (set-rear-ptr! item) (set! rear-ptr item))
@@ -18,8 +19,8 @@
                (set-rear-ptr! new-pair)
                (front-queue))
               (else
-                (set-cdr! rear-ptr new-pair)
-                (set-rear-ptr! new-pair)
+                (set-cdr! rear-ptr new-pair) ;; itemをいまの末尾ポインタのcdr位置へ挿入し,
+                (set-rear-ptr! new-pair)     ;; 末尾ポインタ自体を新itemに向ける.
                 (front-queue)))))
     (define (delete-queue!)
       (cond ((empty-queue?)
@@ -41,4 +42,12 @@
 (define (delete-queue! queue) (queue 'delete!))
 (define (print-queue queue) (queue 'print))
 
-
+(define q (make-queue))
+(print-queue q) ;; ここはErrorになる.
+(insert-queue! q 'a)
+(insert-queue! q 'b)
+(insert-queue! q 'c)
+(delete-queue! q)
+(delete-queue! q)
+(delete-queue! q)
+(delete-queue! q)

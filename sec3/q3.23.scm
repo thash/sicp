@@ -104,4 +104,6 @@
 ;; 1個前の情報を持ってればO(1)で付け替えられる
 ;;
 
-
+(define q (make-deque))
+(print-queue q)
+(front-insert-queue! q 'a)
