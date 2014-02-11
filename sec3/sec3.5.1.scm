@@ -16,6 +16,9 @@
 ;;; 3.5.1. ストリームは遅延リスト
 
 ;; (a). 標準的な反復
+;; aからbまでの整数から素数を探して足し合わせる.
+;; prime? は sec1/q1.21.scm から.
+;; e.g. (sum-primes 0 10) => 17
 (define (sum-primes a b)
   (define (iter count accum)
     (cond ((> count b) accum)
@@ -24,6 +27,8 @@
   (iter a 0))
 
 ;; (b). 2.2.3の並びの演算
+;; 同じロジックを並びで実現する.
+;; enumerate-intervalは ./sec2/sec2.2.3.scm から.
 (define (sum-primes a b)
   (accumulate +
               0
@@ -41,18 +46,20 @@
 ;; そこでストリームですよ。
 ;; ストリームがあれば、並びとして評価するコストを追うことなく、並びに対する演算を行うことが出来る。
 ;;
-;; まずはSICPお馴染み、「使い方」から定義していく。
+;; まずはSICPお馴染み、「使い方」から考えていく. stream-carとstream-cdr, cons-streamの定義は少し後.
 
 (stream-car (cons-stream x y)) = x
 (stream-cdr (cons-stream x y)) = y
 
 (the-empty-stream (stream-null?))
 
+;; streamから任意のindexの要素を取得するstream-ref.
 (define (stream-ref s n)
   (if (= n 0)
     (stream-car s)
     (stream-ref (stream-cdr s) (- n 1))))
 
+;; sec3/q3.50.scm で改良される. コレは非効率版.
 (define (stream-map proc s)
   (if (stream-null? s)
     the-empty-stream
@@ -89,6 +96,9 @@
 (define (stream-car stream) (car stream))
 (define (stream-cdr stream) (force (cdr stream)))
 
+;; 空のstreamなどを定義.
+(define the-empty-stream '())
+(define stream-null? null?)
 
 ;;; delayとforceの実装 ;;;
 ;; (delay <exp>)は(lambda () <exp>)のようなsyntax sugarとして考える。
@@ -115,8 +125,20 @@
   (memo-proc (lambda () <exp>)))
 
 ;; 実際に動くようにするにはdefine-macroでマクロとして定義してやる必要がある。
-;;     stream.scm
-;;     stream-without-memo.scm
-;; ref -> http://sicp.naochan.com/memo.pl?p=stream.scm
+;;   (と書くと難しそうだが, いちばん素のdelayはlambdaの単なるsyntax sugar, という話)
+;; memo化しないバージョンのdelay
+(define-macro (delay x) `(lambda () ,x))
+;; memo化バージョンのdelay
+(define-macro (delay x) `(memo-proc (lambda () ,x)))
 
+;; gosh> (define a (delay 'aaa))
+;; gosh> a ;;=> #<closure a>
+;; gosh> (force a) ;;=> aaa
+
+;; 最終的にこれらを使って実装したcons-streamは
+(define-macro (cons-stream a b)
+  `(cons ,a (delay ,b))) ;; delayで包まれてるからbをevalしちゃっていい.
+
+
+;; cons-streamを使って整数の無限ストリームなんかを作っていく例は => ./sec3/sec3.5.2.scm へ
 

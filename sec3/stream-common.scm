@@ -21,6 +21,7 @@
 (define (display-stream-n s n)
   (stream-for-each-n display-comma s n))
   ;;(stream-for-each-n display-line s n))
+(define (take n s) (display-stream-n s (+ n 1)))
 
 (define (stream-head s n)
   (display-stream-n s n))

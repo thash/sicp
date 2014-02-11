@@ -10,4 +10,5 @@
 (define-macro (delay proc)
   `(memo-proc (lambda () ,proc)))
 
+(add-load-path "." :relative)
 (load "stream-common")

@@ -27,10 +27,30 @@
 ; gosh> (stream-ref no-sevens 100)
 ; 117
 
+;; 並べてみよう.
+;; (stream-for-each-n (lambda (q) (begin (display q) (display ", "))) z 20)
+;; 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 22, done
+
 ;; 無限ふぃぼなっち数列(Fibonacci numbers)を作ってみよう
 (define (fibgen a b)
   (cons-stream a (fibgen b (+ a b))))
 (define fibs (fibgen 0 1))
+
+(define fibgen-same
+  (lambda (a b)
+    (cons-stream a (fibgen-same b (+ a b)))))
+;; (take (fibgen-same 0 1) 10)
+;; (0 1 1 2 3 5 8 13 21)
+
+(let ((Y (lambda (f)
+           ((lambda (x) (f (lambda (z) ((x x) z)))) ;; 適用
+            (lambda (x) (f (lambda (z) ((x x) z))))))))
+  (Y (lambda (f)
+       (lambda (n)
+         ( )))))
+
+;; fibonacciについても同じことできそう
+;; http://d.hatena.ne.jp/nozom/20071027/1193514204
 
 ; gosh> (stream-ref fibs 10)
 ; 55
@@ -49,6 +69,13 @@
 ; gosh> (stream-ref primes 22)
 ; 83
 
+;; (stream-for-each-n
+;;   (lambda (q) (begin (display q) (display ", ")))
+;;   (sieve (integers-starting-from 2))
+;;   20)
+;; 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, done
+
+
 ;; 豆(脚注60): エラストテネスの篩は古典的な素数の探し方であり、1970年代からは1.2.6節で見たような統計的技法で置き換えられている。
 
 
@@ -61,6 +88,7 @@
 (define ones (cons-stream 1 ones))
 ;; (1 1 1 1 ...) と1だけのstream.
 
+;; stream-map
 (define (add-streams s1 s2)
   (stream-map + s1 s2))
 
@@ -108,3 +136,10 @@
 ;; である。"
 
 
+(define (take stream n)
+  (define (iter s n i)
+    (if (or (stream-null? s) (= n i))
+        '()
+        (cons (stream-car s)
+              (iter (stream-cdr s) n (+ i 1)))))
+  (iter stream n 1))
