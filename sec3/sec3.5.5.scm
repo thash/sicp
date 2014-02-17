@@ -46,10 +46,12 @@
 
 (define (map-successive-pairs f s)
   (cons-stream
-    (f (stream-car s) (stream-car (stream-cdr s)))
+    (f (stream-car s) (stream-car (stream-cdr s))) ;; アタマから2ツ取ってf(ここでは任意)で判断.
     (map-successive-pairs f (stream-cdr (stream-cdr s)))))
 
-;; チェザロ
+;; チェザロ実験
+;; 二つの自然数をランダムに取るとそれらが互いに素である確率は PI/6 となる.
+;; 逆に考えてPIを推測してみよう.
 (define cesaro-stream
   (map-successive-pairs (lambda (r1 r2) (= (gcd r1 r2) 1)) ;; 互いに素かどうか
                         random-numbers))
@@ -72,8 +74,10 @@
 ; gosh> (stream-head s 20)
 ; 1, 1, 1, 1, 1, 1, 6/7, 7/8, 8/9, 9/10, 9/11, 5/6, 11/13, 6/7, 13/15, 7/8, 14/17, 5/6, 16/19, done
 
+;; だんだん理想の値に収束していく
+
 ;; 確率ストリームからPIの見積もりストリームへ変換する.
-(define pi
+(define pi ;; stream
   (stream-map (lambda (p) (sqrt (/ 6 p)))
               (monte-carlo cesaro-stream 0 0)))
 
