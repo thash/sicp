@@ -15,3 +15,16 @@
 
 (a-pythagorean-triple-between 1 20)
 
+;;; Amb-Eval input:
+;;; Starting a new problem
+;;; Amb-Eval value (3 4 5)
+;;; Amb-Eval input: try-again
+;;; Amb-Eval value (5 12 13)
+;;; Amb-Eval input: try-again
+;;; Amb-Eval value (6 8 10)
+;;; Amb-Eval input: try-again
+;;; Amb-Eval value (8 15 17)
+;;; Amb-Eval input: try-again
+;;; Amb-Eval value (9 12 15)
+;;; Amb-Eval input: try-again
+;;; Amb-Eval value (12 16 20)

@@ -15,6 +15,7 @@
         ((member (car items) (cdr items)) false)
         (else (distinct? (cdr items)))))
 
+;; 条件はできるかぎり最初のほうでチェックすることで効率よく走るはず.
 
 ;; http://wqzhang.wordpress.com/2010/04/28/sicp-exercise-4-43/
 (define (yacht-puzzle)
